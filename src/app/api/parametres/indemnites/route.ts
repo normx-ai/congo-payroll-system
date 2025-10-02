@@ -56,7 +56,20 @@ export async function GET(req: NextRequest) {
         dateFin: bareme.dateFin
       })
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Array<{
+      id: string
+      type: string
+      libelle: string
+      description: string | null
+      seuilMin: number | null
+      seuilMax: number | null
+      taux: number | null
+      montantMois: number | null
+      ancienneteMinMois: number | null
+      ordre: number
+      dateEffet: Date
+      dateFin: Date | null
+    }>>)
 
     return NextResponse.json({
       success: true,
@@ -146,7 +159,7 @@ export async function PUT(req: NextRequest) {
       })
     } else {
       // Mise à jour immédiate
-      const updateData: any = {}
+      const updateData: { taux?: number; montantMois?: number } = {}
       if (taux !== undefined) updateData.taux = taux
       if (montantMois !== undefined) updateData.montantMois = montantMois
 

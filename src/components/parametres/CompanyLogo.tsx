@@ -55,7 +55,7 @@ export function CompanyLogoCard({ logoUrl, tenantId, onLogoChange }: CompanyLogo
       const data = await response.json()
       onLogoChange(data.logoUrl)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du téléchargement')
+      setError(err instanceof Error ? err instanceof Error ? err.message : 'Erreur inconnue' : 'Erreur lors du téléchargement')
     } finally {
       setUploading(false)
     }
@@ -79,7 +79,7 @@ export function CompanyLogoCard({ logoUrl, tenantId, onLogoChange }: CompanyLogo
 
       onLogoChange(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
+      setError(err instanceof Error ? err instanceof Error ? err.message : 'Erreur inconnue' : 'Erreur lors de la suppression')
     } finally {
       setUploading(false)
     }

@@ -38,7 +38,7 @@ export class RubriquesService {
       return {
         code: rubriqueDb.code,
         libelle: rubriqueDb.libelle,
-        type: rubriqueDb.type as any,
+        type: rubriqueDb.type as 'GAIN_BRUT' | 'GAIN_NON_SOUMIS' | 'COTISATION' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE',
         base: rubriqueDb.base,
         taux: rubriqueDb.taux ? Number(rubriqueDb.taux) : null,
         formule: rubriqueDb.formule,
@@ -82,7 +82,7 @@ export class RubriquesService {
       return rubriquesDb.map(r => ({
         code: r.code,
         libelle: r.libelle,
-        type: r.type as any,
+        type: r.type as 'GAIN_BRUT' | 'GAIN_NON_SOUMIS' | 'COTISATION' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE',
         base: r.base,
         taux: r.taux ? Number(r.taux) : null,
         formule: r.formule,

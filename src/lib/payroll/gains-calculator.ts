@@ -83,7 +83,7 @@ export class GainsCalculator {
 
     // IMPORTANT: S'assurer que le montant est un nombre
     let montant = typeof saisie.montant === 'string' ? parseFloat(saisie.montant) : Number(saisie.montant)
-    let nbHeures = saisie.nbHeures
+    const nbHeures = saisie.nbHeures
 
     // Calcul spécial heures supplémentaires
     if (rubriquesDef.code.startsWith('700') && saisie.nbHeures) {
@@ -98,7 +98,7 @@ export class GainsCalculator {
     return {
       code: rubriquesDef.code,
       libelle: rubriquesDef.libelle,
-      type: rubriquesDef.type as any,
+      type: rubriquesDef.type as 'GAIN_BRUT' | 'GAIN_NON_SOUMIS' | 'COTISATION' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE',
       modeCalcul: { type: 'MONTANT_FIXE', valeur: montant },
       montant,
       soumisCnss,

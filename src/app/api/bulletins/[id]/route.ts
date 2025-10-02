@@ -7,7 +7,7 @@ import { join } from 'path'
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // Récupérer le bulletin pour vérifier l'appartenance au tenant
     const bulletin = await prisma.bulletinPaie.findFirst({

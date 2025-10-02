@@ -29,8 +29,7 @@ export function BulletinFooter({
   year,
   employeeId,
   hireDate,
-  modeReglement = "Virement",
-  datePaiement
+  modeReglement = "Virement"
 }: BulletinFooterProps) {
   const [cumulAnnuel, setCumulAnnuel] = useState<CumulAnnuel>({
     salaireBrut: 0, netImposable: 0, chargesSalariales: 0, chargesPatronales: 0,

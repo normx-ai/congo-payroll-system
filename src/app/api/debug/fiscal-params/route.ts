@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const tenantId = '9f6f38b2-9258-4563-bd52-b8d2be2e55db'
   const codes = ['CNSS_EMPLOYE', 'CNSS_EMPLOYEUR', 'CNSS_PLAFOND']
 

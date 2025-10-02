@@ -53,7 +53,17 @@ export async function GET(req: NextRequest) {
         dateFin: bareme.dateFin
       })
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Array<{
+      id: string
+      situationFamiliale: string
+      nbEnfantsMin: number
+      nbEnfantsMax: number | null
+      parts: number
+      description: string | null
+      ordre: number
+      dateEffet: Date
+      dateFin: Date | null
+    }>>)
 
     return NextResponse.json({
       success: true,

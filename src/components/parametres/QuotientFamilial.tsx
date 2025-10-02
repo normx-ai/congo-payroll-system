@@ -48,8 +48,8 @@ export function QuotientFamilial() {
       if (!result.success) throw new Error(result.error || 'Erreur inconnue')
 
       setBaremes(result.data.baremes)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
     }
@@ -87,8 +87,8 @@ export function QuotientFamilial() {
       setHasChanges(false)
       setModifiedIds(new Set())
       await fetchBaremes()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setSaving(false)
     }

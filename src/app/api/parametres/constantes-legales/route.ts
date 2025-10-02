@@ -53,7 +53,17 @@ export async function GET(req: NextRequest) {
         dateFin: constante.dateFin
       })
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Array<{
+      id: string
+      type: string
+      code: string
+      libelle: string
+      valeur: number
+      unite: string | null
+      description: string | null
+      dateEffet: Date
+      dateFin: Date | null
+    }>>)
 
     return NextResponse.json({
       success: true,

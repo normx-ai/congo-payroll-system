@@ -4,7 +4,7 @@
 import { BulletinPaie, EmployeePaieData, RubriqueEmploye } from './types'
 import { GainsCalculator } from './gains-calculator'
 import { RetenuesCalculator } from './retenues-calculator'
-import { calculateChargesEmployeur, calculateNetAPayer, calculateCNSS, calculateCAMU, calculateIRPP, calculateTUS } from '../payroll-cotisations'
+import { calculateChargesEmployeur, calculateNetAPayer } from '../payroll-cotisations'
 
 export class PayrollEngine {
 

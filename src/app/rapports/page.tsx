@@ -10,20 +10,17 @@ import { Header } from '@/components/layout/Header'
 import { TopBar } from '@/components/layout/TopBar'
 import { MonthSelector } from '@/components/paie/MonthSelector'
 import TabsNavigation from '@/components/rapports/TabsNavigation'
-import PeriodFilter from '@/components/rapports/PeriodFilter'
 import BulletinsList from '@/components/rapports/BulletinsList'
 import StatsCards from '@/components/rapports/StatsCards'
 import EtatCharges from '@/components/rapports/EtatCharges'
 import LivrePaie from '@/components/rapports/LivrePaie'
 import { useRapports } from '@/hooks/useRapports'
-import { useExercices } from '@/hooks/useExercices'
 import { useExerciceMonths } from '@/hooks/useExerciceMonths'
 import { Loader2, FileText, Download } from 'lucide-react'
 
 export default function RapportsPage() {
   const { status } = useSession()
   const router = useRouter()
-  const { exerciceActif } = useExercices()
   const { currentMonthData } = useExerciceMonths()
 
   const [activeTab, setActiveTab] = useState('bulletins')

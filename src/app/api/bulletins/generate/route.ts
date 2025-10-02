@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
     // Les rubriquesSaisies contiennent déjà les charges fixes (ajoutées côté client)
     // IMPORTANT: Convertir tous les montants en nombres
-    const allRubriques = rubriquesSaisies.map(r => ({
+    const allRubriques = rubriquesSaisies.map((r: { code: string; montant: string | number }) => ({
       code: r.code,
       montant: typeof r.montant === 'string' ? parseFloat(r.montant) : Number(r.montant)
     }))

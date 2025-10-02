@@ -19,7 +19,11 @@ export async function GET(req: NextRequest) {
     const actif = searchParams.get('actif') // 'true', 'false'
 
     // 1. Récupérer toutes les rubriques depuis la base de données
-    const whereClause: any = {
+    const whereClause: {
+      tenantId: string
+      isActive?: boolean
+      type?: string | { in: string[] }
+    } = {
       tenantId: session.user.tenantId
     }
 
@@ -29,22 +33,16 @@ export async function GET(req: NextRequest) {
     }
 
     // Filtre par type
-    if (type) {
-      switch (type) {
-        case 'gains':
-          whereClause.type = { in: ['GAIN_BRUT', 'GAIN_NON_SOUMIS'] }
-          break
-        case 'cotisations':
-          whereClause.type = 'COTISATION'
-          break
-        case 'retenues':
-          whereClause.type = { in: ['RETENUE_NON_SOUMISE', 'ELEMENT_NON_IMPOSABLE'] }
-          break
-      }
+    if (type === 'gains') {
+      whereClause.type = { in: ['GAIN_BRUT', 'GAIN_NON_SOUMIS'] }
+    } else if (type === 'cotisations') {
+      whereClause.type = 'COTISATION'
+    } else if (type === 'retenues') {
+      whereClause.type = { in: ['RETENUE_NON_SOUMISE', 'ELEMENT_NON_IMPOSABLE'] }
     }
 
     const rubriquesBD = await prisma.rubrique.findMany({
-      where: whereClause,
+      where: whereClause as Parameters<typeof prisma.rubrique.findMany>[0]['where'],
       orderBy: { ordre: 'asc' }
     })
 

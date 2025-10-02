@@ -65,7 +65,17 @@ export async function GET(req: NextRequest) {
       })
 
       return acc
-    }, {} as Record<string, any[]>)
+    }, {} as Record<string, Array<{
+      id: string
+      code: string
+      libelle: string
+      type: string
+      value: number
+      unit: string
+      description: string
+      dateEffet: Date
+      dateFin: Date | null
+    }>>)
 
     return NextResponse.json({
       success: true,

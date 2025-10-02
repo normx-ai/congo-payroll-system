@@ -5,7 +5,7 @@
  * Basé sur les formules correctes du client + Base de données
  */
 
-import { RubriquesService, RubriqueDefinition } from '@/lib/services/rubriques.service'
+import { RubriqueDefinition } from '@/lib/services/rubriques.service'
 import { ParametresFiscauxService } from '@/lib/services/parametres-fiscaux.service'
 import { calculateIRPP as calculateIRPPLegacy } from '@/components/paie/workflow/irpp-calculation'
 
@@ -80,17 +80,17 @@ export class SharedPayrollEngine {
         return this.calculateCAMU(rubrique, context)
 
       case '3550': // Taxe sur salaires locaux
-        return this.calculateTaxeLocaux(rubrique, context)
+        return this.calculateTaxeLocaux(rubrique)
 
       case '3560': // Taxe sur les locaux (Expat)
-        return this.calculateTaxeLocaux(rubrique, context)
+        return this.calculateTaxeLocaux(rubrique)
 
       case '3570': // Taxe régionale
-        return this.calculateTaxeLocaux(rubrique, context)
+        return this.calculateTaxeLocaux(rubrique)
 
       default:
         // Charge fixe ou montant manuel
-        return this.calculateChargeFixe(rubrique, context)
+        return this.calculateChargeFixe(rubrique)
     }
   }
 
@@ -258,7 +258,12 @@ export class SharedPayrollEngine {
     const { brutSocial, employee } = context
 
     // Utiliser la fonction IRPP existante du client (qui est correcte)
-    const montant = calculateIRPPLegacy(brutSocial, employee as any)
+    type IrppEmployee = {
+      baseSalary?: number
+      maritalStatus?: string
+      dependents?: number
+    }
+    const montant = calculateIRPPLegacy(brutSocial, employee as IrppEmployee)
 
     return {
       code: '3510',
@@ -363,8 +368,7 @@ export class SharedPayrollEngine {
    * 3570: 2400 FCFA (Taxe régionale)
    */
   private static async calculateTaxeLocaux(
-    rubrique: RubriqueDefinition,
-    context: CalculationContext
+    rubrique: RubriqueDefinition
   ): Promise<RubriqueCalculationResult> {
     // Déterminer le montant selon le code de la rubrique
     let montant = 0
@@ -402,8 +406,7 @@ export class SharedPayrollEngine {
    * Charge fixe ou montant par défaut
    */
   private static async calculateChargeFixe(
-    rubrique: RubriqueDefinition,
-    context: CalculationContext
+    rubrique: RubriqueDefinition
   ): Promise<RubriqueCalculationResult> {
     // Pour les rubriques sans formule spécifique
     return {

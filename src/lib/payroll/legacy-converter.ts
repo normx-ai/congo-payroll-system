@@ -106,8 +106,8 @@ export function convertToLegacy(employee: LegacyEmployeeInput, bulletin: Bulleti
       dateEmbauche: ('hireDate' in employee && employee.hireDate)
         ? formatDate(employee.hireDate)
         : undefined,
-      departement: 'department' in employee && employee.department
-        ? (employee.department as any).name
+      departement: 'department' in employee && employee.department && typeof employee.department === 'object' && 'name' in employee.department
+        ? (employee.department as { name: string }).name
         : undefined,
       service: undefined, // À enrichir si disponible
       qualification: undefined, // À enrichir si disponible
@@ -230,7 +230,15 @@ function determineRetenueType(code: string): 'COTISATION' | 'RETENUE_NON_SOUMISE
 /**
  * Extrait la base de calcul d'une rubrique
  */
-function extractBase(rubrique: any): number | undefined {
+type RubriqueWithBase = {
+  modeCalcul?: {
+    type: string
+    valeur?: number
+  }
+  montant?: number
+}
+
+function extractBase(rubrique: RubriqueWithBase): number | undefined {
   // Si la rubrique a un mode de calcul avec une base, l'utiliser
   if (rubrique.modeCalcul?.type === 'TAUX' && typeof rubrique.montant === 'number') {
     // Calculer la base à partir du montant et du taux si disponible
@@ -245,7 +253,7 @@ function extractBase(rubrique: any): number | undefined {
 /**
  * Extrait le taux d'une rubrique
  */
-function extractTaux(rubrique: any): string | undefined {
+function extractTaux(rubrique: RubriqueWithBase): string | undefined {
   if (rubrique.modeCalcul?.type === 'TAUX') {
     const valeur = rubrique.modeCalcul.valeur
     if (typeof valeur === 'number') {

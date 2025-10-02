@@ -48,8 +48,8 @@ export function ConstantesLegales() {
       if (!result.success) throw new Error(result.error || 'Erreur inconnue')
 
       setConstantes(result.data.constantes)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
     }
@@ -87,8 +87,8 @@ export function ConstantesLegales() {
       setHasChanges(false)
       setModifiedIds(new Set())
       await fetchConstantes()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setSaving(false)
     }

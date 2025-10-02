@@ -34,6 +34,7 @@ export function BulletinHeaderServer({ company, calculation, periodStart, period
             {company.logoUrl && (
               <div className="flex-shrink-0">
                 <div className="relative w-40 h-32">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={company.logoUrl.startsWith('http') ? company.logoUrl : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}${company.logoUrl}`}
                     alt={`Logo ${company.name}`}

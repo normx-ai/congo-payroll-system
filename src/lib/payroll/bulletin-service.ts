@@ -179,7 +179,7 @@ export class BulletinService {
 
       // 4. Calcul de la paie avec les rubriques saisies
       const mappedRubriques = (request.rubriquesSaisies || []).map(r => ({
-        code: r.code || (r as any).rubriqueCode,
+        code: r.code || ('rubriqueCode' in r ? (r as { rubriqueCode: string }).rubriqueCode : ''),
         montant: r.amount
       }))
       console.log('🔧 DEBUG BulletinService - Rubriques reçues:', request.rubriquesSaisies)

@@ -38,7 +38,16 @@ export function PayrollConstants() {
       if (!result.success) throw new Error(result.error || 'Erreur inconnue')
 
       // Mapper les données de l'API vers le format du composant
-      const mappedConstants: PayrollConstant[] = result.data.parametres.map((param: any) => {
+      type ApiParameter = {
+        id: string
+        code: string
+        libelle: string
+        description: string | null
+        value: string
+        unit: string | null
+      }
+
+      const mappedConstants: PayrollConstant[] = result.data.parametres.map((param: ApiParameter) => {
         let category: PayrollConstant['category'] = 'legal'
 
         if (param.code.startsWith('CNSS_') || param.code.startsWith('CAMU_') ||
@@ -62,8 +71,8 @@ export function PayrollConstants() {
       })
 
       setConstants(mappedConstants)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
       console.error('Erreur:', err)
     } finally {
       setLoading(false)
@@ -107,8 +116,8 @@ export function PayrollConstants() {
 
       // Recharger les données
       await fetchParameters()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
       console.error('Erreur lors de la sauvegarde:', err)
     } finally {
       setSaving(false)

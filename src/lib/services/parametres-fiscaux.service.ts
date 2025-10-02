@@ -10,8 +10,7 @@ export class ParametresFiscauxService {
    */
   static async getParametre(
     tenantId: string,
-    code: string,
-    periode?: Date
+    code: string
   ) {
     const parametre = await prisma.fiscalParameter.findFirst({
       where: {
@@ -34,10 +33,9 @@ export class ParametresFiscauxService {
    */
   static async getValue(
     tenantId: string,
-    code: string,
-    periode?: Date
+    code: string
   ): Promise<number> {
-    const parametre = await this.getParametre(tenantId, code, periode)
+    const parametre = await this.getParametre(tenantId, code)
     return Number(parametre.value)
   }
 
@@ -48,8 +46,7 @@ export class ParametresFiscauxService {
    */
   static async getParametres(
     tenantId: string,
-    codes: string[],
-    periode?: Date
+    codes: string[]
   ): Promise<Record<string, number>> {
     // Récupérer tous les paramètres actifs pour ce tenant
     const parametres = await prisma.fiscalParameter.findMany({
@@ -86,8 +83,7 @@ export class ParametresFiscauxService {
    * Récupère tous les paramètres fiscaux actifs
    */
   static async getAllParametres(
-    tenantId: string,
-    periode?: Date
+    tenantId: string
   ) {
     const allParams = await prisma.fiscalParameter.findMany({
       where: {

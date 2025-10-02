@@ -38,8 +38,8 @@ export function IrppBareme() {
       if (!result.success) throw new Error(result.error || 'Erreur inconnue')
 
       setTranches(result.data)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
       console.error('Erreur:', err)
     } finally {
       setLoading(false)
@@ -80,8 +80,8 @@ export function IrppBareme() {
       setHasChanges(false)
       setModifiedIds(new Set())
       await fetchBareme()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
       console.error('Erreur lors de la sauvegarde:', err)
     } finally {
       setSaving(false)
@@ -206,7 +206,7 @@ export function IrppBareme() {
         <div>
           <h3 className="font-medium text-blue-900 text-sm mb-1">Information</h3>
           <p className="text-sm text-blue-800">
-            Le barème de l'IRPP est progressif par tranches. Chaque portion du salaire imposable est taxée au taux correspondant à sa tranche.
+            Le barème de l&apos;IRPP est progressif par tranches. Chaque portion du salaire imposable est taxée au taux correspondant à sa tranche.
           </p>
         </div>
       </div>

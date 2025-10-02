@@ -50,8 +50,8 @@ export function BaremeIndemnites() {
       if (!result.success) throw new Error(result.error || 'Erreur inconnue')
 
       setBaremes(result.data.baremes)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
     }
@@ -90,8 +90,8 @@ export function BaremeIndemnites() {
       setHasChanges(false)
       setModifiedIds(new Set())
       await fetchBaremes()
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur de sauvegarde')
     } finally {
       setSaving(false)
     }
@@ -116,7 +116,7 @@ export function BaremeIndemnites() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Barèmes d'Indemnités</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Barèmes d&apos;Indemnités</h2>
           <p className="text-gray-600 mt-1">Convention Collective Commerce Congo</p>
         </div>
         <div className="flex gap-2">

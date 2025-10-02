@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculer les cumuls
-    let cumuls = {
+    const cumuls = {
       salaireBrut: 0,
       netImposable: 0,
       chargesSalariales: 0,
@@ -38,21 +38,34 @@ export async function GET(request: NextRequest) {
       tol: 0
     }
 
+    type RubriqueData = {
+      code?: string
+      type?: string
+      montant?: number
+    }
+
+    type BulletinData = {
+      rubriques?: {
+        gains?: RubriqueData[]
+        retenues?: RubriqueData[]
+      }
+    }
+
     bulletins.forEach(bulletin => {
       if (bulletin.dataJson && typeof bulletin.dataJson === 'object') {
-        const data = bulletin.dataJson as any
+        const data = bulletin.dataJson as BulletinData
 
         // Calculer le salaire brut (tous les gains bruts)
         const salaireBrutMensuel = data.rubriques?.gains
-          ?.filter((g: any) => g.type === 'GAIN_BRUT')
-          ?.reduce((sum: number, g: any) => sum + (g.montant || 0), 0) || 0
+          ?.filter((g) => g.type === 'GAIN_BRUT')
+          ?.reduce((sum, g) => sum + (g.montant || 0), 0) || 0
 
         cumuls.salaireBrut += salaireBrutMensuel
 
         // Calculer la CNSS salariale
         const cnssTotal = data.rubriques?.retenues
-          ?.filter((r: any) => r.code === '3100')
-          ?.reduce((sum: number, r: any) => sum + (r.montant || 0), 0) || 0
+          ?.filter((r) => r.code === '3100')
+          ?.reduce((sum, r) => sum + (r.montant || 0), 0) || 0
         const cnssSalariale = cnssTotal * (4/12)
 
         // Net imposable = (Brut - CNSS 4%) × 80%
@@ -61,14 +74,14 @@ export async function GET(request: NextRequest) {
 
         // Charges salariales (CNSS 4% + IRPP + CAMU + TOL)
         const irpp = data.rubriques?.retenues
-          ?.filter((r: any) => r.code === '3510')
-          ?.reduce((sum: number, r: any) => sum + (r.montant || 0), 0) || 0
+          ?.filter((r) => r.code === '3510')
+          ?.reduce((sum, r) => sum + (r.montant || 0), 0) || 0
         const camu = data.rubriques?.retenues
-          ?.filter((r: any) => r.code === '3540')
-          ?.reduce((sum: number, r: any) => sum + (r.montant || 0), 0) || 0
+          ?.filter((r) => r.code === '3540')
+          ?.reduce((sum, r) => sum + (r.montant || 0), 0) || 0
         const tol = data.rubriques?.retenues
-          ?.filter((r: any) => r.code === '3550')
-          ?.reduce((sum: number, r: any) => sum + (r.montant || 0), 0) || 0
+          ?.filter((r) => r.code === '3550')
+          ?.reduce((sum, r) => sum + (r.montant || 0), 0) || 0
 
         cumuls.chargesSalariales += cnssSalariale + irpp + camu + tol
         cumuls.irpp += irpp
@@ -77,8 +90,8 @@ export async function GET(request: NextRequest) {
         // Charges patronales (CNSS 8% + AT + PF + Retraites)
         const cnssPatronale = cnssTotal * (8/12)
         const autresChargesPatronales = data.rubriques?.retenues
-          ?.filter((r: any) => ['3110', '3120', '3530', '3130', '3560', '3570'].includes(r.code))
-          ?.reduce((sum: number, r: any) => sum + (r.montant || 0), 0) || 0
+          ?.filter((r) => ['3110', '3120', '3530', '3130', '3560', '3570'].includes(r.code || ''))
+          ?.reduce((sum, r) => sum + (r.montant || 0), 0) || 0
 
         cumuls.chargesPatronales += cnssPatronale + autresChargesPatronales
 

@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
           isActive: employee.isActive ?? true
         }
 
-        const bulletinPaie = calculatePayroll(employeeForPayroll, periode, {
+        const bulletinPaie = await calculatePayroll(employeeForPayroll, periode, {
           joursTravailles: 30
         })
 

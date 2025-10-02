@@ -79,10 +79,11 @@ export async function POST(req: NextRequest) {
       rubrique: result
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Erreur lors du calcul de rubrique:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Erreur serveur'
     return NextResponse.json(
-      { error: error.message || 'Erreur serveur' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
