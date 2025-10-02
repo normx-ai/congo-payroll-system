@@ -48,7 +48,7 @@ export function ChargesList({
       {selectedRubriquesData.map((rubrique) => (
         <div
           key={rubrique.code}
-          className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
+          className="flex items-center justify-between p-3 bg-gray-50 rounded-md border border-indigo-200"
         >
           <div className="flex items-center gap-2 flex-1">
             <span className="font-medium text-sm">{rubrique.code}</span>
@@ -65,9 +65,8 @@ export function ChargesList({
                 const value = e.target.value.replace(/[^\d]/g, '')
                 onAmountChange(rubrique.code, value)
               }}
-              className="w-32 text-right [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+              className="w-24 text-right border-indigo-200 focus:border-indigo-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
             />
-            <span className="text-sm text-gray-500">FCFA</span>
             <Button
               variant="ghost"
               size="sm"
