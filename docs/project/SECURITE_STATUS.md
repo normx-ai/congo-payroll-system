@@ -26,7 +26,7 @@
 ### 3. Documentation Créée
 - ✅ `RAPPORT_AUDIT_CODE.md` - Audit complet du projet
 - ✅ `SECURITY_GUIDE.md` - Guide de sécurité détaillé
-- ✅ `check-security.sh` - Script de vérification automatique
+- ✅ `scripts/check-security.sh` - Script de vérification automatique
 - ✅ `.env.example` amélioré avec instructions
 
 ---
@@ -52,12 +52,11 @@
 ### Vérification régulière
 ```bash
 cd /home/chris/norm_paie
-./check-security.sh
+./scripts/check-security.sh
 ```
 
 ### Démarrage de l'application
 ```bash
-cd backend
 npm run dev
 ```
 
