@@ -31,7 +31,7 @@ else
 fi
 
 # Vérifier la présence de .env dans .gitignore
-if grep -q "^\.env" .gitignore 2>/dev/null || grep -q "^\.env" backend/.gitignore 2>/dev/null; then
+if grep -q "^\.env" .gitignore 2>/dev/null; then
     echo -e "${GREEN}✅ .env est dans .gitignore${NC}"
 else
     echo -e "${YELLOW}⚠️  AVERTISSEMENT: .env devrait être dans .gitignore${NC}"
@@ -39,7 +39,7 @@ else
 fi
 
 # Vérifier si .env.example existe
-if [ -f "backend/.env.example" ]; then
+if [ -f ".env.example" ]; then
     echo -e "${GREEN}✅ .env.example existe${NC}"
 else
     echo -e "${YELLOW}⚠️  AVERTISSEMENT: .env.example manquant${NC}"
@@ -51,19 +51,19 @@ echo "2️⃣  Recherche de secrets potentiels dans le code..."
 echo "----------------------------------------"
 
 # Rechercher des mots de passe hardcodés
-HARDCODED_PASSWORDS=$(grep -r "password.*=.*['\"].*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next --exclude="*.test.*" --exclude="*.spec.*" backend/src 2>/dev/null | grep -v "password.*:.*string" | wc -l)
+HARDCODED_PASSWORDS=$(grep -r "password.*=.*['\"].*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next --exclude="*.test.*" --exclude="*.spec.*" src 2>/dev/null | grep -v "password.*:.*string" | wc -l)
 
 if [ "$HARDCODED_PASSWORDS" -gt 0 ]; then
     echo -e "${RED}❌ CRITIQUE: $HARDCODED_PASSWORDS mot(s) de passe potentiel(s) trouvé(s) dans le code${NC}"
     echo "   Fichiers concernés:"
-    grep -r "password.*=.*['\"].*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next --exclude="*.test.*" --exclude="*.spec.*" backend/src 2>/dev/null | grep -v "password.*:.*string" | cut -d: -f1 | uniq | head -5
+    grep -r "password.*=.*['\"].*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next --exclude="*.test.*" --exclude="*.spec.*" src 2>/dev/null | grep -v "password.*:.*string" | cut -d: -f1 | uniq | head -5
     ((ISSUES++))
 else
     echo -e "${GREEN}✅ Aucun mot de passe hardcodé détecté${NC}"
 fi
 
 # Rechercher des clés API potentielles
-API_KEYS=$(grep -r "api.*key.*=.*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next backend/src 2>/dev/null | grep -v "process.env" | wc -l)
+API_KEYS=$(grep -r "api.*key.*=.*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --exclude-dir=node_modules --exclude-dir=.next src 2>/dev/null | grep -v "process.env" | wc -l)
 
 if [ "$API_KEYS" -gt 0 ]; then
     echo -e "${YELLOW}⚠️  AVERTISSEMENT: $API_KEYS clé(s) API potentielle(s) trouvée(s)${NC}"
@@ -77,7 +77,7 @@ echo "3️⃣  Vérification des console.log..."
 echo "----------------------------------------"
 
 # Compter les console.log
-CONSOLE_LOGS=$(find backend/src -name "*.ts" -o -name "*.tsx" | xargs grep -l "console\.\(log\|error\|warn\)" 2>/dev/null | wc -l)
+CONSOLE_LOGS=$(find src -name "*.ts" -o -name "*.tsx" | xargs grep -l "console\.\(log\|error\|warn\)" 2>/dev/null | wc -l)
 
 if [ "$CONSOLE_LOGS" -gt 0 ]; then
     echo -e "${YELLOW}⚠️  AVERTISSEMENT: $CONSOLE_LOGS fichier(s) avec console.log${NC}"
@@ -107,13 +107,13 @@ echo "5️⃣  Vérification des permissions..."
 echo "----------------------------------------"
 
 # Vérifier les permissions du fichier .env
-if [ -f "backend/.env" ]; then
-    PERM=$(stat -c "%a" backend/.env 2>/dev/null || stat -f "%A" backend/.env 2>/dev/null)
+if [ -f ".env" ]; then
+    PERM=$(stat -c "%a" .env 2>/dev/null || stat -f "%A" .env 2>/dev/null)
     if [ "$PERM" = "644" ] || [ "$PERM" = "600" ]; then
         echo -e "${GREEN}✅ Permissions de .env correctes ($PERM)${NC}"
     else
         echo -e "${YELLOW}⚠️  AVERTISSEMENT: Permissions de .env trop permissives ($PERM)${NC}"
-        echo "   Recommandé: chmod 600 backend/.env"
+        echo "   Recommandé: chmod 600 .env"
         ((WARNINGS++))
     fi
 fi

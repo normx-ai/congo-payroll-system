@@ -9,7 +9,7 @@
 ## 📁 Structure des Fichiers
 
 ```
-backend/
+.
 ├── src/
 │   ├── i18n/
 │   │   └── request.ts              # Configuration next-intl
