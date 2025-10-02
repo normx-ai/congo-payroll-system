@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { BulletinPreview } from '@/components/paie/BulletinPreview'
 import { PayrollCalculation } from '@/lib/payroll'
-import { renderToStaticMarkup } from 'react-dom/server'
+
+export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,15 +14,20 @@ export async function POST(req: NextRequest) {
 
     const { calculation, month, year, employeeId, company } = await req.json()
 
+    // Utilisation dynamique de renderToStaticMarkup pour éviter l'erreur de build
+    const { renderToStaticMarkup } = await import('react-dom/server')
+    const { createElement } = await import('react')
+    const { BulletinPreview } = await import('@/components/paie/BulletinPreview')
+
     // Rendre le composant React en HTML statique
     const bulletinHTML = renderToStaticMarkup(
-      <BulletinPreview
-        calculation={calculation as PayrollCalculation}
-        month={month}
-        year={year}
-        employeeId={employeeId}
-        company={company}
-      />
+      createElement(BulletinPreview, {
+        calculation: calculation as PayrollCalculation,
+        month,
+        year,
+        employeeId,
+        company
+      })
     )
 
     // Créer un document HTML complet avec Tailwind CSS
