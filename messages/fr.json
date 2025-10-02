@@ -1,0 +1,120 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "add": "Ajouter",
+    "refresh": "Actualiser",
+    "loading": "Chargement...",
+    "saving": "Enregistrement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "confirm": "Confirmer",
+    "close": "Fermer"
+  },
+  "parameters": {
+    "title": "Paramètres",
+    "subtitle": "Configuration du système de paie",
+    "tabs": {
+      "rubriques": "Rubriques de Paie",
+      "exercices": "Exercices Fiscaux",
+      "departements": "Départements",
+      "fiscal": "Paramètres Fiscaux",
+      "irpp": "Barème IRPP",
+      "quotient": "Quotient Familial",
+      "indemnites": "Barèmes Indemnités",
+      "legales": "Constantes Légales",
+      "company": "Entreprise"
+    },
+    "fiscal": {
+      "title": "Paramètres Fiscaux",
+      "subtitle": "Taux et valeurs légaux Congo - Depuis la base de données",
+      "cnss": "Caisse Nationale de Sécurité Sociale",
+      "cnss_description": "Cotisation sociale obligatoire",
+      "camu": "Caisse d'Assurance Maladie Universelle",
+      "camu_description": "Assurance maladie obligatoire",
+      "tus": "Taxe Unique sur les Salaires",
+      "tus_description": "Taxe patronale sur la masse salariale",
+      "irpp_abattement": "Abattement IRPP",
+      "irpp_abattement_description": "Abattement forfaitaire pour frais professionnels",
+      "category_social": "Cotisations Sociales",
+      "category_tax": "Fiscalité",
+      "category_legal": "Légal",
+      "category_overtime": "Heures Supplémentaires",
+      "no_parameters": "Aucun paramètre fiscal trouvé.",
+      "run_seed": "Exécutez le seed pour initialiser les paramètres."
+    },
+    "irpp": {
+      "title": "Barème IRPP",
+      "subtitle": "Impôt sur le Revenu des Personnes Physiques (CGI Article 95)",
+      "tranche": "Tranche",
+      "from": "De",
+      "to": "À",
+      "rate": "Taux",
+      "amount": "Montant",
+      "unlimited": "Illimité",
+      "progressive_brackets": "Tranches d'imposition progressives",
+      "no_tranches": "Aucune tranche IRPP trouvée.",
+      "run_seed": "Exécutez le seed pour initialiser le barème.",
+      "info_title": "Information",
+      "info_description": "Le barème IRPP est progressif par tranche. Chaque tranche s'applique uniquement à la portion du revenu qui y correspond. Les modifications prennent effet immédiatement pour tous les calculs de paie."
+    },
+    "quotient": {
+      "title": "Quotient Familial",
+      "subtitle": "Article 91 CGI Congo - Parts fiscales (plafond: 6.5 parts)",
+      "situations": {
+        "CELIBATAIRE": "Célibataire",
+        "MARIE": "Marié(e)",
+        "VEUF": "Veuf/Veuve",
+        "DIVORCE": "Divorcé(e)"
+      },
+      "children": {
+        "none": "Sans enfant à charge",
+        "one": "{count} enfant à charge",
+        "many": "{count} enfants à charge",
+        "orMore": "{count}+ enfants à charge"
+      },
+      "parts": "part(s)"
+    },
+    "indemnites": {
+      "title": "Barèmes d'Indemnités",
+      "subtitle": "Convention Collective Commerce Congo",
+      "types": {
+        "RETRAITE": "Départ à la retraite",
+        "LICENCIEMENT": "Licenciement standard",
+        "COMPRESSION": "Compression de personnel",
+        "MATERNITE": "Congé maternité",
+        "FIN_ANNEE": "Prime de fin d'année"
+      },
+      "years": "ans",
+      "months": "mois"
+    },
+    "legales": {
+      "title": "Constantes Légales",
+      "subtitle": "Paramètres du Code du travail congolais",
+      "types": {
+        "TEMPS_TRAVAIL": "Temps de travail",
+        "CONGES": "Congés payés",
+        "CONVERSION": "Facteurs de conversion",
+        "SEUIL_LEGAL": "Seuils légaux"
+      },
+      "units": {
+        "heures": "heures",
+        "jours": "jours",
+        "semaines": "semaines",
+        "mois": "mois",
+        "ans": "ans",
+        "pourcent": "%",
+        "parts": "parts"
+      }
+    }
+  },
+  "errors": {
+    "loadingFailed": "Erreur lors du chargement",
+    "savingFailed": "Erreur lors de la sauvegarde",
+    "unauthorized": "Non autorisé",
+    "notFound": "Introuvable",
+    "networkError": "Erreur réseau"
+  }
+}

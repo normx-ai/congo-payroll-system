@@ -1,0 +1,120 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "parameters": {
+    "title": "Settings",
+    "subtitle": "Payroll system configuration",
+    "tabs": {
+      "rubriques": "Payroll Items",
+      "exercices": "Fiscal Years",
+      "departements": "Departments",
+      "fiscal": "Tax Parameters",
+      "irpp": "Income Tax Schedule",
+      "quotient": "Family Quotient",
+      "indemnites": "Indemnity Schedules",
+      "legales": "Legal Constants",
+      "company": "Company"
+    },
+    "fiscal": {
+      "title": "Fiscal Parameters",
+      "subtitle": "Legal rates and values for Congo - From database",
+      "cnss": "National Social Security Fund",
+      "cnss_description": "Mandatory social contribution",
+      "camu": "Universal Health Insurance Fund",
+      "camu_description": "Mandatory health insurance",
+      "tus": "Single Payroll Tax",
+      "tus_description": "Employer payroll tax",
+      "irpp_abattement": "Income Tax Allowance",
+      "irpp_abattement_description": "Standard allowance for professional expenses",
+      "category_social": "Social Contributions",
+      "category_tax": "Taxation",
+      "category_legal": "Legal",
+      "category_overtime": "Overtime",
+      "no_parameters": "No fiscal parameters found.",
+      "run_seed": "Run the seed script to initialize parameters."
+    },
+    "irpp": {
+      "title": "Income Tax Schedule",
+      "subtitle": "Personal Income Tax (CGI Article 95)",
+      "tranche": "Bracket",
+      "from": "From",
+      "to": "To",
+      "rate": "Rate",
+      "amount": "Amount",
+      "unlimited": "Unlimited",
+      "progressive_brackets": "Progressive tax brackets",
+      "no_tranches": "No income tax brackets found.",
+      "run_seed": "Run the seed script to initialize the schedule.",
+      "info_title": "Information",
+      "info_description": "The income tax schedule is progressive by bracket. Each bracket applies only to the portion of income within its range. Changes take effect immediately for all payroll calculations."
+    },
+    "quotient": {
+      "title": "Family Quotient",
+      "subtitle": "Article 91 CGI Congo - Tax shares (max: 6.5 shares)",
+      "situations": {
+        "CELIBATAIRE": "Single",
+        "MARIE": "Married",
+        "VEUF": "Widowed",
+        "DIVORCE": "Divorced"
+      },
+      "children": {
+        "none": "No dependent children",
+        "one": "{count} dependent child",
+        "many": "{count} dependent children",
+        "orMore": "{count}+ dependent children"
+      },
+      "parts": "share(s)"
+    },
+    "indemnites": {
+      "title": "Indemnity Schedules",
+      "subtitle": "Commerce Collective Agreement Congo",
+      "types": {
+        "RETRAITE": "Retirement",
+        "LICENCIEMENT": "Standard Dismissal",
+        "COMPRESSION": "Staff Reduction",
+        "MATERNITE": "Maternity Leave",
+        "FIN_ANNEE": "Year-End Bonus"
+      },
+      "years": "years",
+      "months": "months"
+    },
+    "legales": {
+      "title": "Legal Constants",
+      "subtitle": "Congo Labour Code parameters",
+      "types": {
+        "TEMPS_TRAVAIL": "Working Time",
+        "CONGES": "Paid Leave",
+        "CONVERSION": "Conversion Factors",
+        "SEUIL_LEGAL": "Legal Thresholds"
+      },
+      "units": {
+        "heures": "hours",
+        "jours": "days",
+        "semaines": "weeks",
+        "mois": "months",
+        "ans": "years",
+        "pourcent": "%",
+        "parts": "shares"
+      }
+    }
+  },
+  "errors": {
+    "loadingFailed": "Loading failed",
+    "savingFailed": "Saving failed",
+    "unauthorized": "Unauthorized",
+    "notFound": "Not found",
+    "networkError": "Network error"
+  }
+}

@@ -1,0 +1,581 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @unique(map: "ix_tenants_name") @db.VarChar(100)
+  displayName      String            @map("display_name") @db.VarChar(200)
+  domain           String?           @unique @db.VarChar(255)
+  companyName      String            @map("company_name") @db.VarChar(200)
+  companyAddress   String?           @map("company_address")
+  companyPhone     String?           @map("company_phone") @db.VarChar(50)
+  companyEmail     String?           @map("company_email") @db.VarChar(100)
+  nui              String?           @db.VarChar(50)
+  rccm             String?           @db.VarChar(50)
+  cnssNumber       String?           @map("cnss_number") @db.VarChar(50)
+  logoUrl          String?           @map("logo_url") @db.VarChar(500)
+  isActive         Boolean?          @map("is_active")
+  settings         String?
+  createdAt        DateTime?         @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime?         @updatedAt @map("updated_at") @db.Timestamp(6)
+  departments      Department[]
+  employees        Employee[]
+  exercices        Exercice[]
+  fiscalParameters FiscalParameter[]
+  irppTranches     IrppTranche[]
+  payrollConfigs   PayrollConfig[]
+  users               User[]
+  bulletinsPaie       BulletinPaie[]
+  etatsChargesMensuels EtatChargesMensuel[]
+  salaryHistory       EmployeeSalaryHistory[]
+  rubriques           Rubrique[]
+  baremesIndemnites   BaremeIndemnite[]
+  baremesQuotientFamilial BaremeQuotientFamilial[]
+  constantesLegales   ConstanteLegale[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("tenants")
+}
+
+model User {
+  id                  String     @id @default(uuid()) @db.Uuid
+  tenantId            String     @map("tenant_id") @db.Uuid
+  username            String     @unique(map: "ix_users_username") @db.VarChar(50)
+  email               String     @unique(map: "ix_users_email") @db.VarChar(100)
+  hashedPassword      String     @map("hashed_password") @db.VarChar(255)
+  firstName           String     @map("first_name") @db.VarChar(100)
+  lastName            String     @map("last_name") @db.VarChar(100)
+  phone               String?    @db.VarChar(50)
+  role                userrole
+  isActive            Boolean?   @map("is_active")
+  isVerified          Boolean?   @map("is_verified")
+  lastLogin           DateTime?  @map("last_login") @db.Timestamp(6)
+  passwordChangedAt   DateTime?  @map("password_changed_at") @db.Timestamp(6)
+  failedLoginAttempts Int?       @map("failed_login_attempts")
+  lockedUntil         DateTime?  @map("locked_until") @db.Timestamp(6)
+  createdAt           DateTime?  @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime?  @updatedAt @map("updated_at") @db.Timestamp(6)
+  employee            Employee[]
+  tenant              Tenant     @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  salaryHistoryChanges EmployeeSalaryHistory[]
+
+  @@map("users")
+}
+
+model Department {
+  id                                          String       @id @default(uuid()) @db.Uuid
+  tenantId                                    String       @map("tenant_id") @db.Uuid
+  parentId                                    String?      @map("parent_id") @db.Uuid
+  code                                        String       @db.VarChar(50)
+  name                                        String       @db.VarChar(200)
+  description                                 String?
+  managerId                                   String?      @map("manager_id") @db.Uuid
+  isActive                                    Boolean?     @map("is_active")
+  createdAt                                   DateTime?    @map("created_at") @db.Timestamp(6)
+  updatedAt                                   DateTime?    @updatedAt @map("updated_at") @db.Timestamp(6)
+  employees_departments_manager_idToemployees Employee?    @relation("departments_manager_idToemployees", fields: [managerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  departments                                 Department?  @relation("departmentsTodepartments", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_departments                           Department[] @relation("departmentsTodepartments")
+  tenant                                      Tenant       @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  employees                                   Employee[]
+
+  @@map("departments")
+}
+
+model Employee {
+  id                                            String               @id @default(uuid()) @db.Uuid
+  tenantId                                      String               @map("tenant_id") @db.Uuid
+  userId                                        String?              @map("user_id") @db.Uuid
+  departmentId                                  String?              @map("department_id") @db.Uuid
+  employeeCode                                  String               @map("employee_code") @db.VarChar(50)
+  firstName                                     String               @map("first_name") @db.VarChar(100)
+  lastName                                      String               @map("last_name") @db.VarChar(100)
+  middleName                                    String?              @map("middle_name") @db.VarChar(100)
+  dateOfBirth                                   DateTime?            @map("date_of_birth") @db.Date
+  placeOfBirth                                  String?              @map("place_of_birth") @db.VarChar(200)
+  nationality                                   String?              @db.VarChar(100)
+  gender                                        String?              @db.VarChar(10)
+  maritalStatus                                 String?              @map("marital_status") @db.VarChar(20)
+  phone                                         String?              @db.VarChar(50)
+  email                                         String?              @db.VarChar(100)
+  address                                       String?
+  emergencyContact                              String?              @map("emergency_contact")
+  hireDate                                      DateTime             @map("hire_date") @db.Date
+  contractType                                  String               @map("contract_type") @db.VarChar(50)
+  contractStartDate                             DateTime?            @map("contract_start_date") @db.Date
+  contractEndDate                               DateTime?            @map("contract_end_date") @db.Date
+  baseSalary                                    Decimal              @map("base_salary") @db.Decimal(12, 2)
+  salaryCategory                                String?              @map("salary_category") @db.VarChar(50)
+  paymentMethod                                 String?              @map("payment_method") @db.VarChar(50)
+  bankName                                      String?              @map("bank_name") @db.VarChar(100)
+  bankAccount                                   String?              @map("bank_account") @db.VarChar(100)
+  cnssNumber                                    String?              @map("cnss_number") @db.VarChar(50)
+  camuNumber                                    String?              @map("camu_number") @db.VarChar(50)
+  retirementNumber                              String?              @map("retirement_number") @db.VarChar(50)
+  isActive                                      Boolean?             @map("is_active")
+  terminationDate                               DateTime?            @map("termination_date") @db.Date
+  terminationReason                             String?              @map("termination_reason")
+  createdAt                                     DateTime?            @map("created_at") @db.Timestamp(6)
+  updatedAt                                     DateTime?            @updatedAt @map("updated_at") @db.Timestamp(6)
+  conventionCollective                          String?              @map("convention_collective") @db.VarChar(100)
+  categorieProfessionnelle                      Int?                 @map("categorie_professionnelle")
+  echelon                                       Int?
+  nui                                           String?              @db.VarChar(20)
+  childrenCount                                 Int?                 @map("children_count")
+  position                                      String               @db.VarChar(200)
+  contracts                                     contracts[]
+  departments_departments_manager_idToemployees Department[]         @relation("departments_manager_idToemployees")
+  employeeAllowances                            EmployeeAllowance[]
+  chargesFixes                                  EmployeeChargeFixe[]
+  department                                    Department?          @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tenant                                        Tenant               @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user                                          User?                @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payslip                                       Payslip[]
+  bulletinsPaie                                 BulletinPaie[]
+  salaryHistory                                 EmployeeSalaryHistory[]
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@index([tenantId, employeeCode])
+  @@index([tenantId, email])
+  @@index([tenantId, cnssNumber])
+  @@index([tenantId, firstName, lastName])
+  @@index([hireDate])
+  @@map("employees")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+}
+
+model contracts {
+  id           String    @id @db.Uuid
+  employeeId   String    @map("employee_id") @db.Uuid
+  contractType String    @map("contract_type") @db.VarChar(50)
+  startDate    DateTime  @map("start_date") @db.Timestamp(6)
+  endDate      DateTime? @map("end_date") @db.Timestamp(6)
+  baseSalary   Decimal   @map("base_salary") @db.Decimal(10, 2)
+  currency     String?   @db.VarChar(3)
+  isActive     Boolean?  @map("is_active")
+  notes        String?
+  createdAt    DateTime? @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime? @map("updated_at") @db.Timestamp(6)
+  employees    Employee  @relation(fields: [employeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model EmployeeAllowance {
+  id            String    @id @db.Uuid
+  employeeId    String    @map("employee_id") @db.Uuid
+  allowanceType String    @map("allowance_type") @db.VarChar(100)
+  amount        Decimal   @db.Decimal(10, 2)
+  currency      String?   @db.VarChar(3)
+  startDate     DateTime  @map("start_date") @db.Timestamp(6)
+  endDate       DateTime? @map("end_date") @db.Timestamp(6)
+  isActive      Boolean?  @map("is_active")
+  isRecurring   Boolean?  @map("is_recurring")
+  description   String?
+  createdAt     DateTime? @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime? @map("updated_at") @db.Timestamp(6)
+  employees     Employee  @relation(fields: [employeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("employee_allowances")
+}
+
+model PayrollConfig {
+  id                        String    @id @db.Uuid
+  tenantId                  String    @map("tenant_id") @db.Uuid
+  irppRate                  Decimal?  @map("irpp_rate") @db.Decimal(5, 2)
+  cnssEmployeeRate          Decimal?  @map("cnss_employee_rate") @db.Decimal(5, 2)
+  cnssEmployerRate          Decimal?  @map("cnss_employer_rate") @db.Decimal(5, 2)
+  minimumWage               Decimal?  @map("minimum_wage") @db.Decimal(10, 2)
+  defaultTransportAllowance Decimal?  @map("default_transport_allowance") @db.Decimal(10, 2)
+  defaultHousingAllowance   Decimal?  @map("default_housing_allowance") @db.Decimal(10, 2)
+  fiscalYearStartMonth      String?   @map("fiscal_year_start_month") @db.VarChar(2)
+  payrollFrequency          String?   @map("payroll_frequency") @db.VarChar(20)
+  isActive                  Boolean?  @map("is_active")
+  additionalSettings        String?   @map("additional_settings")
+  createdAt                 DateTime? @map("created_at") @db.Timestamp(6)
+  updatedAt                 DateTime? @map("updated_at") @db.Timestamp(6)
+  tenants                   Tenant    @relation(fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("payroll_configs")
+}
+
+model Payslip {
+  id                 String    @id @db.Uuid
+  employeeId         String    @map("employee_id") @db.Uuid
+  periodMonth        Int       @map("period_month")
+  periodYear         Int       @map("period_year")
+  baseSalary         Decimal   @map("base_salary") @db.Decimal(10, 2)
+  grossSalary        Decimal   @map("gross_salary") @db.Decimal(10, 2)
+  netSalary          Decimal   @map("net_salary") @db.Decimal(10, 2)
+  taxDeduction       Decimal?  @map("tax_deduction") @db.Decimal(10, 2)
+  cnssDeduction      Decimal?  @map("cnss_deduction") @db.Decimal(10, 2)
+  otherDeductions    Decimal?  @map("other_deductions") @db.Decimal(10, 2)
+  transportAllowance Decimal?  @map("transport_allowance") @db.Decimal(10, 2)
+  housingAllowance   Decimal?  @map("housing_allowance") @db.Decimal(10, 2)
+  otherAllowances    Decimal?  @map("other_allowances") @db.Decimal(10, 2)
+  isGenerated        Boolean?  @map("is_generated")
+  isSent             Boolean?  @map("is_sent")
+  notes              String?
+  createdAt          DateTime? @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime? @map("updated_at") @db.Timestamp(6)
+  employees          Employee  @relation(fields: [employeeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("payslips")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  action    String   @db.VarChar(50)
+  entity    String   @db.VarChar(50)
+  entityId  String?  @map("entity_id") @db.Uuid
+  oldValue  Json?    @map("old_value")
+  newValue  Json?    @map("new_value")
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}
+
+model Exercice {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  libelle     String    @db.VarChar(200)
+  annee       Int
+  dateDebut   DateTime  @map("date_debut") @db.Date
+  dateFin     DateTime  @map("date_fin") @db.Date
+  isActif     Boolean   @default(false) @map("is_actif")
+  isClos      Boolean   @default(false) @map("is_clos")
+  description String?
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @updatedAt @map("updated_at") @db.Timestamp(6)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([tenantId, annee])
+  @@index([tenantId])
+  @@index([tenantId, isActif])
+  @@index([tenantId, annee])
+  @@map("exercices")
+}
+
+model EmployeeChargeFixe {
+  id           String   @id @default(uuid()) @db.Uuid
+  employeeId   String   @map("employee_id") @db.Uuid
+  rubriqueCode String   @map("rubrique_code") @db.VarChar(10)
+  amount       Decimal  @db.Decimal(15, 2)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([employeeId, rubriqueCode])
+  @@index([employeeId])
+  @@index([employeeId, isActive])
+  @@index([rubriqueCode])
+  @@map("employee_charges_fixes")
+}
+
+model FiscalParameter {
+  id          String        @id @default(uuid()) @db.Uuid
+  tenantId    String        @map("tenant_id") @db.Uuid
+  code        String        @db.VarChar(50)
+  libelle     String        @db.VarChar(200)
+  type        ParameterType
+  value       Decimal       @db.Decimal(15, 6)
+  unit        String?       @db.VarChar(20)
+  description String?
+  isActive    Boolean       @default(true) @map("is_active")
+  dateEffet   DateTime      @map("date_effet") @db.Date
+  dateFin     DateTime?     @map("date_fin") @db.Date
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code, dateEffet])
+  @@index([tenantId, code])
+  @@index([tenantId, isActive, dateEffet])
+  @@index([code, dateEffet])
+  @@map("fiscal_parameters")
+}
+
+model IrppTranche {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  ordre       Int
+  seuil_min   Decimal   @map("seuil_min") @db.Decimal(15, 2)
+  seuil_max   Decimal?  @map("seuil_max") @db.Decimal(15, 2)
+  taux        Decimal   @db.Decimal(5, 2)
+  description String    @db.VarChar(200)
+  isActive    Boolean   @default(true) @map("is_active")
+  dateEffet   DateTime  @map("date_effet") @db.Date
+  dateFin     DateTime? @map("date_fin") @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, ordre, dateEffet])
+  @@index([tenantId, isActive, dateEffet])
+  @@index([tenantId, ordre])
+  @@map("irpp_tranches")
+}
+
+model BulletinPaie {
+  id                     String               @id @default(uuid()) @db.Uuid
+  employeeId             String               @map("employee_id") @db.Uuid
+  tenantId               String               @map("tenant_id") @db.Uuid
+  month                  Int                  @map("month")
+  year                   Int                  @map("year")
+  periode                String               @db.VarChar(7) // Format: YYYY-MM
+  pdfPath                String?              @map("pdf_path") @db.VarChar(500)
+  status                 BulletinStatus       @default(draft)
+  grossSalary            Decimal              @map("gross_salary") @db.Decimal(15, 2)
+  netSalary              Decimal              @map("net_salary") @db.Decimal(15, 2)
+  totalDeductions        Decimal              @map("total_deductions") @db.Decimal(15, 2)
+  totalChargesPatronales Decimal              @map("total_charges_patronales") @db.Decimal(15, 2)
+  dataJson               Json?                @map("data_json") // Détails complets du bulletin
+  createdAt              DateTime             @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt              DateTime             @updatedAt @map("updated_at") @db.Timestamp(6)
+  employee               Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  tenant                 Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, periode])
+  @@index([tenantId, periode])
+  @@index([tenantId, status])
+  @@index([tenantId, year, month])
+  @@index([employeeId, year, month])
+  @@map("bulletins_paie")
+}
+
+model EtatChargesMensuel {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  month                Int       @map("month")
+  year                 Int       @map("year")
+  periode              String    @db.VarChar(7) // Format: YYYY-MM
+  totalEmployees       Int       @map("total_employees")
+  totalGrossSalary     Decimal   @map("total_gross_salary") @db.Decimal(15, 2)
+  totalNetSalary       Decimal   @map("total_net_salary") @db.Decimal(15, 2)
+  totalChargesPatronales Decimal @map("total_charges_patronales") @db.Decimal(15, 2)
+  totalChargesSalariales Decimal @map("total_charges_salariales") @db.Decimal(15, 2)
+  pdfPath              String?   @map("pdf_path") @db.VarChar(500)
+  dataJson             Json?     @map("data_json") // Détails par employé
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, periode])
+  @@index([tenantId, year, month])
+  @@index([periode])
+  @@map("etats_charges_mensuels")
+}
+
+enum userrole {
+  Administrateur
+  Manager
+  Operateur
+  Consultant
+}
+
+enum ParameterType {
+  TAUX
+  MONTANT
+  PLAFOND
+  SEUIL
+}
+
+enum BulletinStatus {
+  draft
+  validated
+  archived
+}
+
+model EmployeeSalaryHistory {
+  id                      String    @id @default(uuid()) @db.Uuid
+  employeeId              String    @map("employee_id") @db.Uuid
+  tenantId                String    @map("tenant_id") @db.Uuid
+  userId                  String    @map("user_id") @db.Uuid // Qui a fait le changement
+  changeDate              DateTime  @map("change_date") @db.Timestamp(6)
+  effectiveDate           DateTime  @map("effective_date") @db.Date // Date d'effet du changement
+  changeType              SalaryChangeType @map("change_type")
+  changeReason            String    @map("change_reason") @db.VarChar(200)
+  // Anciens valeurs
+  oldBaseSalary           Decimal?  @map("old_base_salary") @db.Decimal(15, 2)
+  oldCategorieProfessionnelle Int?  @map("old_categorie_professionnelle")
+  oldEchelon              Int?      @map("old_echelon")
+  oldConventionCollective String?   @map("old_convention_collective") @db.VarChar(100)
+  // Nouvelles valeurs
+  newBaseSalary           Decimal?  @map("new_base_salary") @db.Decimal(15, 2)
+  newCategorieProfessionnelle Int?  @map("new_categorie_professionnelle")
+  newEchelon              Int?      @map("new_echelon")
+  newConventionCollective String?   @map("new_convention_collective") @db.VarChar(100)
+  // Métadonnées
+  isRetroactive           Boolean   @default(false) @map("is_retroactive")
+  impactedBulletins       String[]  @map("impacted_bulletins") // Liste des IDs de bulletins potentiellement impactés
+  notes                   String?
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  employee                Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  tenant                  Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                    User      @relation(fields: [userId], references: [id], onDelete: NoAction)
+
+  @@index([employeeId, effectiveDate])
+  @@index([tenantId, changeDate])
+  @@index([tenantId, isRetroactive])
+  @@index([userId, changeDate])
+  @@map("employee_salary_history")
+}
+
+enum SalaryChangeType {
+  PROMOTION          // Promotion (changement catégorie/échelon)
+  SALARY_INCREASE    // Augmentation salariale
+  SALARY_DECREASE    // Diminution salariale
+  CONVENTION_CHANGE  // Changement convention collective
+  ADJUSTMENT         // Ajustement/Correction
+  INITIAL            // Salaire initial
+}
+
+model Rubrique {
+  id          String        @id @default(uuid()) @db.Uuid
+  tenantId    String        @map("tenant_id") @db.Uuid
+  code        String        @db.VarChar(10)
+  libelle     String        @db.VarChar(200)
+  type        RubriqueType
+  base        String?       @db.VarChar(200)
+  taux        Decimal?      @db.Decimal(5, 2)
+  formule     String?
+  imposable   Boolean       @default(false)
+  isActive    Boolean       @default(true) @map("is_active")
+  ordre       Int?          // Pour l'affichage dans l'ordre souhaité
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId, type])
+  @@index([tenantId, isActive])
+  @@map("rubriques")
+}
+
+enum RubriqueType {
+  GAIN_BRUT
+  COTISATION
+  GAIN_NON_SOUMIS
+  RETENUE_NON_SOUMISE
+  ELEMENT_NON_IMPOSABLE
+}
+
+enum TypeIndemnite {
+  RETRAITE                  // Indemnité de départ à la retraite
+  LICENCIEMENT              // Indemnité de licenciement standard (barème progressif)
+  COMPRESSION               // Indemnité de licenciement pour compression de personnel
+  MATERNITE                 // Indemnité de congé maternité (part employeur)
+  FIN_ANNEE                 // Prime de fin d'année
+}
+
+model BaremeIndemnite {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String         @map("tenant_id") @db.Uuid
+  type        TypeIndemnite
+  libelle     String         @db.VarChar(200)
+  description String?
+
+  // Pour les indemnités avec barème par ancienneté (ex: Licenciement standard)
+  seuilMin    Int?           @map("seuil_min")    // En années (ex: 1)
+  seuilMax    Int?           @map("seuil_max")    // En années (ex: 6), null = illimité
+  taux        Decimal?       @db.Decimal(5, 2)    // En % (ex: 30.00 pour 30%)
+
+  // Pour les indemnités à montant fixe (ex: Retraite)
+  montantMois Int?           @map("montant_mois") // Nombre de mois de salaire (ex: 5, 7)
+
+  // Conditions spécifiques
+  ancienneteMinMois Int?     @map("anciennete_min_mois") // Ancienneté minimale en mois
+
+  ordre       Int                                   // Pour affichage ordonné
+  isActive    Boolean        @default(true) @map("is_active")
+  dateEffet   DateTime       @default(now()) @map("date_effet") @db.Timestamp(6)
+  dateFin     DateTime?      @map("date_fin") @db.Timestamp(6)
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, type, isActive])
+  @@index([tenantId, dateEffet])
+  @@map("bareme_indemnites")
+}
+
+// Barème du quotient familial - Article 91 CGI Congo
+enum SituationFamiliale {
+  CELIBATAIRE
+  MARIE
+  VEUF
+  DIVORCE
+}
+
+model BaremeQuotientFamilial {
+  id                  String             @id @default(uuid()) @db.Uuid
+  tenantId            String             @map("tenant_id") @db.Uuid
+  situationFamiliale  SituationFamiliale @map("situation_familiale")
+  nbEnfantsMin        Int                @map("nb_enfants_min")  // Nombre minimum d'enfants
+  nbEnfantsMax        Int?               @map("nb_enfants_max")  // null = illimité
+  parts               Decimal            @db.Decimal(3, 1)       // Nombre de parts fiscales (ex: 2.5)
+  description         String?                                    // Description de la situation
+
+  ordre               Int                                        // Pour affichage ordonné
+  isActive            Boolean            @default(true) @map("is_active")
+  dateEffet           DateTime           @default(now()) @map("date_effet") @db.Timestamp(6)
+  dateFin             DateTime?          @map("date_fin") @db.Timestamp(6)
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt           DateTime           @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant              Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, situationFamiliale, isActive])
+  @@index([tenantId, dateEffet])
+  @@map("bareme_quotient_familial")
+}
+
+// Constantes légales - Paramètres du droit du travail Congo
+enum TypeConstante {
+  TEMPS_TRAVAIL          // Heures/jours de travail légaux
+  CONGES                 // Paramètres liés aux congés
+  CONVERSION             // Facteurs de conversion (semaines/mois, etc.)
+  SEUIL_LEGAL           // Seuils légaux divers
+}
+
+model ConstanteLegale {
+  id          String        @id @default(uuid()) @db.Uuid
+  tenantId    String        @map("tenant_id") @db.Uuid
+  type        TypeConstante
+  code        String        @db.VarChar(50)     // "HEURES_SEMAINE", "HEURES_MOIS", etc.
+  libelle     String        @db.VarChar(200)
+  valeur      Decimal       @db.Decimal(10, 4)  // Valeur numérique de la constante
+  unite       String?       @db.VarChar(50)     // "heures", "jours", "semaines", etc.
+  description String?                           // Détails et contexte légal
+
+  isActive    Boolean       @default(true) @map("is_active")
+  dateEffet   DateTime      @default(now()) @map("date_effet") @db.Timestamp(6)
+  dateFin     DateTime?     @map("date_fin") @db.Timestamp(6)
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code, dateEffet])
+  @@index([tenantId, type, isActive])
+  @@index([tenantId, dateEffet])
+  @@map("constantes_legales")
+}

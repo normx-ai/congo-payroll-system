@@ -1,0 +1,121 @@
+{
+  "article": 95,
+  "texte": [
+    "1) Le revenu net imposable correspondant à une part est taxé en appliquant le taux de :",
+    "• 1 % pour la fraction de revenu n’excédant pas 464.000 FCFA ;",
+    "• 10 % pour la fraction comprise entre 464.001 et 1.000.000 FCFA ;",
+    "• 25 % pour la fraction comprise entre 1.000.001 et 3.000.000 FCFA ;",
+    "• 40 % pour la fraction au-dessus de 3.000.000 FCFA.",
+    "2) Lorsque le revenu global est inférieur au salaire minimum garanti fixé par les textes en vigueur, la cotisation n’est pas mise en recouvrement."
+  ],
+  "paragraphes": {
+    "II": "Les dispositions du paragraphe I ci-dessus s’appliquent aux contribuables visés aux paragraphes 1, 2 et 4 de l’article 2.",
+    "III": "Les mêmes règles sont applicables pour le calcul de l’IRPP dû par les personnes de nationalité congolaise n’entrant pas dans les prévisions du premier alinéa du présent paragraphe, domiciliées hors du Congo, et disposant de revenus de propriétés, exploitations ou professions exercées au Congo.",
+    "IV": "Sous réserve des dispositions de l’article 96 ci-après, les contribuables n’entrant pas dans les cas visés au paragraphe II ci-dessus sont considérés comme des contribuables mariés sans enfant à charge, s’ils sont de nationalité française ou ressortissants d’un État de l’UAM et célibataires sans enfant à charge dans les autres cas ; toutefois le montant de l’impôt résultant de l’application du barème ci-dessus ne peut être inférieur à 20 % du revenu net imposable.",
+    "V": [
+      "Le revenu imposable de sociétés et autres personnes morales visées à l’article 7 est constitué par le total formé d’une part, par le montant global des sommes que, directement ou par l’entreprise des tiers, ces sociétés ont versé au cours de la période retenue pour l’établissement de l’impôt sur les sociétés à des personnes dont elles ne révèlent pas l’identité et, d’autre part, par l’avantage qui en résulte pour ces personnes de la prise en charge de l’impôt par la personne morale versante.",
+      "La déclaration des sommes taxables est souscrite en même temps que celle relative à l’impôt sur les sociétés.",
+      "Le taux maximum de l’IRPP sans abattement est appliqué aux sommes imposables."
+    ]
+  }
+}
+
+{
+  "calcul_irpp": {
+    "version": "CGI Congo – consolidation utilisateur",
+    "monnaie": "FCFA",
+    "etapes": [
+      {
+        "id": 1,
+        "nom": "Revenu brut imposable",
+        "reference_legale": "Art. 39 CGI",
+        "definition": "Montant net du salaire ainsi que tous les avantages en argent et en nature accordés au salarié.",
+        "avantages_en_nature_reference": "Salaire brut comme base de référence (Art. 39)."
+      },
+      {
+        "id": 2,
+        "nom": "Déductions sociales (CNSS)",
+        "reference_legale": "Art. 40 CGI",
+        "regles": {
+          "taux_cnss_salarie": 0.04,
+          "taux_cnss_salarie_pourcent": "4%",
+          "assiette_plafonnee_mensuelle": 1200000,
+          "assiette_plafonnee_annuelle": 14400000,
+          "description": "Retenue sécurité sociale/CNSS du salarié, appliquée sur une assiette plafonnée."
+        },
+        "sortie": "Revenu après CNSS"
+      },
+      {
+        "id": 3,
+        "nom": "Déduction forfaitaire pour frais professionnels",
+        "reference_legale": "Art. 41 CGI",
+        "regles": {
+          "taux_deduction": 0.20,
+          "taux_deduction_pourcent": "20%",
+          "assiette": "Montant brut imposable après déduction CNSS"
+        },
+        "sortie": "Revenu net imposable"
+      },
+      {
+        "id": 4,
+        "nom": "Quotient familial – nombre de parts",
+        "reference_legale": "Art. 91 CGI",
+        "formule": "Revenu net imposable ÷ Nombre de parts = Revenu net imposable (pour une part)",
+        "table_parts": [
+          { "parts": 1, "situation": "Célibataire, divorcé ou veuf sans enfant à charge" },
+          { "parts": 2, "situation": "Marié sans enfants à charge" },
+          { "parts": 2, "situation": "Célibataire ou divorcé avec un enfant à charge" },
+          { "parts": 2.5, "situation": "Marié ou veuf avec un enfant à charge" },
+          { "parts": 2.5, "situation": "Célibataire ou divorcé avec deux enfants à charge" },
+          { "parts": 3, "situation": "Célibataire ou divorcé avec trois enfants à charge" },
+          { "parts": 3, "situation": "Marié ou veuf avec deux enfants à charge" },
+          { "parts": 3.5, "situation": "Célibataire ou divorcé avec quatre enfants à charge" },
+          { "parts": 3.5, "situation": "Marié ou veuf avec trois enfants à charge" }
+        ],
+        "precision": "Augmenter d’une demi-part par enfant à charge, jusqu’à un maximum de 6,5 parts."
+      },
+      {
+        "id": 5,
+        "nom": "Barème progressif de l’IRPP (par part, base annuelle)",
+        "reference_legale": "Art. 95 CGI",
+        "tranches": [
+          { "seuil_inf": 0, "seuil_sup": 464000, "taux": 0.01, "taux_pourcent": "1%" },
+          { "seuil_inf": 464001, "seuil_sup": 1000000, "taux": 0.10, "taux_pourcent": "10%" },
+          { "seuil_inf": 1000001, "seuil_sup": 3000000, "taux": 0.25, "taux_pourcent": "25%" },
+          { "seuil_inf": 3000001, "seuil_sup": null, "taux": 0.40, "taux_pourcent": "40%" }
+        ],
+        "formule": "Somme des (fraction de revenu dans chaque tranche × taux) = IRPP par part",
+        "note": "Si le revenu global est inférieur au salaire minimum garanti, la cotisation n’est pas mise en recouvrement (Art. 95, §2)."
+      },
+      {
+        "id": 6,
+        "nom": "Obtention de l’IRPP total",
+        "reference_legale": "Art. 89 CGI (principe de multiplication par les parts)",
+        "formule": "IRPP à payer (pour une part) × Nombre de parts = IRPP total à payer"
+      },
+      {
+        "id": 7,
+        "nom": "Imputations éventuelles",
+        "reference_legale": "Art. 89 et 97 CGI",
+        "regles": [
+          "Imputation de l’IRVM payé dans un État de l’UDEAC sur l’IRPP dû (sans restitution si IRVM > IRPP)."
+        ]
+      }
+    ],
+    "entrees_attendues": {
+      "salaire_brut_annuel": "nombre",
+      "avantages_nature_ou_argent": "nombre",
+      "nb_enfants_a_charge": "entier",
+      "situation_familiale": "string (célibataire, marié, veuf, divorcé, etc.)"
+    },
+    "sorties": {
+      "revenu_apres_cnss": "nombre",
+      "revenu_net_imposable": "nombre",
+      "parts_fiscales": "nombre",
+      "revenu_par_part": "nombre",
+      "irpp_par_part": "nombre",
+      "irpp_total": "nombre"
+    }
+  }
+}
+
