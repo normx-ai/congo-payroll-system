@@ -114,10 +114,10 @@ const BAREMES_INDEMNITES = [
   }
 ]
 
-async function seedForTenant(tenant: any, dateEffet: Date) {
+async function seedForTenant(tenant: { id: string; companyName: string }, dateEffet: Date) {
   console.log(`\n💰 ${tenant.companyName}`)
 
-  let stats = { created: 0, existing: 0 }
+  const stats = { created: 0, existing: 0 }
 
   for (const bareme of BAREMES_INDEMNITES) {
     const exists = await prisma.baremeIndemnite.findFirst({

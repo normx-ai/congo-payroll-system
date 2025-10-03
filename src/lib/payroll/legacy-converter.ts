@@ -129,7 +129,7 @@ export function convertToLegacy(employee: LegacyEmployeeInput, bulletin: Bulleti
         code: g.code,
         designation: g.libelle,
         montant: g.montant,
-        type: g.type,
+        type: g.type as 'GAIN_BRUT' | 'GAIN_NON_SOUMIS',
         base: g.base,
         taux: g.taux,
         quantite: g.quantite
@@ -138,7 +138,7 @@ export function convertToLegacy(employee: LegacyEmployeeInput, bulletin: Bulleti
         code: r.code,
         designation: r.libelle,
         montant: r.montant,
-        type: r.type,
+        type: r.type as 'COTISATION' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE',
         base: r.base,
         taux: r.taux
       }))
@@ -233,7 +233,7 @@ function determineRetenueType(code: string): 'COTISATION' | 'RETENUE_NON_SOUMISE
 type RubriqueWithBase = {
   modeCalcul?: {
     type: string
-    valeur?: number
+    valeur?: number | string
   }
   montant?: number
 }
@@ -242,7 +242,9 @@ function extractBase(rubrique: RubriqueWithBase): number | undefined {
   // Si la rubrique a un mode de calcul avec une base, l'utiliser
   if (rubrique.modeCalcul?.type === 'TAUX' && typeof rubrique.montant === 'number') {
     // Calculer la base à partir du montant et du taux si disponible
-    const taux = rubrique.modeCalcul.valeur
+    const taux = typeof rubrique.modeCalcul.valeur === 'number'
+      ? rubrique.modeCalcul.valeur
+      : parseFloat(rubrique.modeCalcul.valeur || '0')
     if (taux && taux > 0) {
       return Math.round(rubrique.montant / (taux / 100))
     }

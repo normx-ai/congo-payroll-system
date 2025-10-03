@@ -6,6 +6,7 @@ import { useRubriques } from '@/contexts/RubriquesContext'
 import { BulletinPreview } from '../BulletinPreview'
 import { useCompany } from '@/hooks/useCompany'
 import { useBulletinGeneration } from '@/hooks/useBulletinGeneration'
+import { useParametresFiscaux } from '@/hooks/useParametresFiscaux'
 import { ReviewStepProps } from './review-types'
 import { buildPayrollCalculation } from './payroll-calculation-builder'
 import { calculatePayrollTotals } from './totals-calculator'
@@ -15,6 +16,10 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
   const { rubriques } = useRubriques()
   const { company } = useCompany()
   const { generating, success, error, downloadUrl, generateAndSaveBulletin, reset } = useBulletinGeneration()
+
+  // Récupérer les paramètres fiscaux depuis la DB
+  const periode = `${year}-${month.padStart(2, '0')}`
+  const { parametres: parametresFiscaux, loading: loadingParams } = useParametresFiscaux(periode)
 
   // Debug log pour voir les données de l'employé
   console.log('ReviewStep - selectedEmployeeData:', {
@@ -49,7 +54,7 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
       // Ajouter l'arrondi s'il est activé
       const rubrique9110 = allRubriquesToShow.find(r => r.code === '9110')
       if (rubrique9110) {
-        const { montantArrondi } = calculatePayrollTotals(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year)
+        const { montantArrondi } = calculatePayrollTotals(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year, parametresFiscaux)
         rubriquesSaisies.push({
           code: '9110',
           montant: montantArrondi
@@ -83,13 +88,14 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
     isActive: r.isActive,
     type: r.type
   })))
-  // Calculer tous les totaux
+  // Calculer tous les totaux (avec paramètres fiscaux depuis DB)
   const {
     totalGainsBruts,
     totalGainsNonSoumis,
     totalRetenues,
     netAPayer
-  } = calculatePayrollTotals(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year)
+  } = calculatePayrollTotals(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year, parametresFiscaux)
+
   // Créer l'objet calculation pour BulletinPreview
   const totals = {
     totalGainsBruts,
@@ -104,7 +110,8 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
     month,
     year,
     allRubriquesToShow,
-    totals
+    totals,
+    parametresFiscaux
   )
 
   return (
@@ -118,10 +125,18 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
         </CardHeader>
         <CardContent>
           <div className="space-y-4 mb-6">
+            {loadingParams && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-700 text-sm flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  Chargement des paramètres fiscaux...
+                </p>
+              </div>
+            )}
             <div className="flex gap-4">
               <Button
                 onClick={handleValidateAndGenerateBulletin}
-                disabled={generating || success}
+                disabled={generating || success || loadingParams}
                 className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
               >
                 {generating ? (

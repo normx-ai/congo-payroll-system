@@ -52,7 +52,7 @@ export class UnifiedPayrollEngine {
   /**
    * Calcul batch pour plusieurs employés
    */
-  static calculateBulletinsBatch(
+  static async calculateBulletinsBatch(
     employees: SupportedEmployeeInput[],
     options: UnifiedPayrollOptions
   ) {
@@ -60,7 +60,7 @@ export class UnifiedPayrollEngine {
 
     for (const employee of employees) {
       try {
-        const bulletin = this.calculateBulletin(employee, options)
+        const bulletin = await this.calculateBulletin(employee, options)
         results.push({
           success: true,
           data: bulletin,
@@ -123,7 +123,7 @@ export class UnifiedPayrollEngine {
 
     // Test moteur unifié
     try {
-      const unified = this.calculateBulletin(employee, { periode })
+      const unified = await this.calculateBulletin(employee, { periode })
       results.unified = { success: true, netAPayer: unified.netAPayer }
     } catch (error) {
       results.unified = { success: false, error: (error as Error).message }
@@ -132,8 +132,9 @@ export class UnifiedPayrollEngine {
     // Test moteur legacy si applicable
     if ('salaireBase' in employee) {
       try {
-        const legacy = PayrollEngine.calculateBulletin({
+        const legacy = await PayrollEngine.calculateBulletin({
           employeeId: 'id' in employee ? employee.id : '',
+          tenantId: 'tenantId' in employee ? (employee as { tenantId?: string }).tenantId || 'default' : 'default',
           periode,
           baseSalary: 'salaireBase' in employee ? (employee as LegacyEmployee).salaireBase || 0 : 0,
           ancienneteAnnees: 0,

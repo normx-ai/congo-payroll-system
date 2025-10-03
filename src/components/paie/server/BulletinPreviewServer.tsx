@@ -35,7 +35,7 @@ export function BulletinPreviewServer({
   const periodEnd = new Date(parseInt(year), parseInt(month), 0).getDate() + `/${month}/${year}`
 
   return (
-    <div className="bg-white mx-auto text-sm" style={{width: '210mm', padding: '10mm'}}>
+    <div className="bg-white mx-auto text-xs font-light" style={{width: '210mm', padding: '8mm'}}>
       <BulletinHeaderServer
         company={company}
         calculation={calculation}

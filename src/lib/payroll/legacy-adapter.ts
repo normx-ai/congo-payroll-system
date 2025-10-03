@@ -16,14 +16,14 @@ export class PayrollCalculator {
   /**
    * Calcule la paie - Interface legacy avec moteur unifié
    */
-  static calculatePayroll(employee: LegacyEmployeeInput): PayrollCalculation {
+  static async calculatePayroll(employee: LegacyEmployeeInput): Promise<PayrollCalculation> {
     // Période par défaut (mois actuel)
     const now = new Date()
     const periode = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`
 
     try {
       // Utiliser le moteur unifié
-      const bulletin = calculatePayroll(employee, periode)
+      const bulletin = await calculatePayroll(employee, periode)
 
       // Convertir vers l'interface legacy
       return this.convertToLegacy(employee, bulletin)

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 interface Rubrique {
   code: string
   libelle: string
-  type: 'GAIN_BRUT' | 'COTISATION' | 'GAIN_NON_SOUMIS' | 'RETENUE_NON_SOUMISE'
+  type: 'GAIN_BRUT' | 'COTISATION' | 'GAIN_NON_SOUMIS' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE'
   base: string
   taux: number | null
   formule: string

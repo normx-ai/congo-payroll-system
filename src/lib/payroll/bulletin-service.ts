@@ -8,6 +8,7 @@ import { calculatePayroll } from '@/lib/payroll'
 import { BulletinGenerator } from '@/lib/bulletin-generator'
 import { BulletinPDFGenerator } from '@/lib/bulletin-pdf'
 import { PayrollCalculation, EmployeeData, CompanyData } from '@/types/payroll'
+import { PayrollCalculation as LegacyPayrollCalculation } from '@/lib/payroll/legacy-types'
 
 export interface BulletinGenerationRequest {
   employeeId: string
@@ -94,6 +95,60 @@ export class BulletinService {
   }
 
   /**
+   * Convertit PayrollCalculation moderne vers le format legacy attendu par le bulletin
+   */
+  private static convertToLegacyFormat(
+    calculation: PayrollCalculation,
+    employee: EmployeeData
+  ): LegacyPayrollCalculation {
+    // Calculer les totaux depuis les rubriques
+    const totalGains = calculation.rubriques.reduce((sum, r) => sum + r.montant, 0)
+    const totalRetenues = calculation.retenues.reduce((sum, r) => sum + r.montant, 0)
+
+    return {
+      employeeId: employee.id,
+      employeeName: `${employee.firstName} ${employee.lastName}`,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      employeeCode: employee.employeeCode,
+      position: employee.position,
+      salaireBase: employee.baseSalary,
+      totalGains,
+      totalRetenues,
+      totalAvantages: 0,
+      salaireNet: calculation.netAPayer,
+      cotisationsEmployeur: calculation.totalChargesPatronales,
+      rubriques: {
+        gains: calculation.rubriques.map(r => ({
+          code: r.code,
+          designation: r.libelle,
+          montant: r.montant,
+          type: r.type
+        })),
+        retenues: [
+          ...calculation.retenues.map(r => ({
+            code: r.code,
+            designation: r.libelle,
+            montant: r.montant,
+            base: 0,
+            taux: '',
+            chargePatronale: 0
+          })),
+          ...calculation.cotisations.map(c => ({
+            code: c.code,
+            designation: c.libelle,
+            montant: c.montantSalarial,
+            base: 0,
+            taux: c.taux.toString() + '%',
+            chargePatronale: c.montantPatronal
+          }))
+        ],
+        autresRetenues: []
+      }
+    }
+  }
+
+  /**
    * Génère le PDF du bulletin
    */
   static async generateBulletinPDF(
@@ -104,10 +159,14 @@ export class BulletinService {
   ): Promise<Buffer> {
     const [year, month] = periode.split('-')
 
+    // Convertir vers le format legacy
+    const legacyCalculation = this.convertToLegacyFormat(calculatedData, employee)
+
     const bulletinData = {
-      calculation: calculatedData,
+      calculation: legacyCalculation,
       month,
       year,
+      employeeId: employee.id,
       company: {
         name: tenant.companyName || 'Entreprise',
         address: tenant.companyAddress || '',
@@ -185,7 +244,7 @@ export class BulletinService {
       console.log('🔧 DEBUG BulletinService - Rubriques reçues:', request.rubriquesSaisies)
       console.log('🔧 DEBUG BulletinService - Rubriques mappées:', mappedRubriques)
 
-      const calculatedData = calculatePayroll({
+      const calculatedData = await calculatePayroll({
         id: employee.id,
         firstName: employee.firstName,
         lastName: employee.lastName,
@@ -199,9 +258,10 @@ export class BulletinService {
         nui: employee.nui || undefined,
         cnssNumber: employee.cnssNumber || undefined,
         categorieProfessionnelle: employee.categorieProfessionnelle || 0,
-        echelon: employee.echelon || 0,
+        echelon: employee.echelon || 0
+      }, request.periode, {
         rubriquesSaisies: mappedRubriques
-      }, request.periode)
+      })
 
       // 5. Génération PDF
       const pdfBuffer = await this.generateBulletinPDF({

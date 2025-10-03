@@ -45,7 +45,7 @@ export function PayrollForm({ employees, loading, selectedMonth, selectedYear, s
 
     const selectedEmployeeData = employees.find(emp => emp.id === selectedEmployee)
     if (selectedEmployeeData) {
-      const payrollCalculations = [PayrollCalculator.calculatePayroll(selectedEmployeeData)]
+      const payrollCalculations = [await PayrollCalculator.calculatePayroll(selectedEmployeeData)]
 
       setTimeout(() => {
         setCalculations(payrollCalculations)
@@ -69,7 +69,7 @@ export function PayrollForm({ employees, loading, selectedMonth, selectedYear, s
 
     const selectedEmployeeData = employees.find(emp => emp.id === selectedEmployee)
     if (selectedEmployeeData) {
-      const payrollCalculations = [PayrollCalculator.calculatePayroll(selectedEmployeeData)]
+      const payrollCalculations = [await PayrollCalculator.calculatePayroll(selectedEmployeeData)]
       setCalculations(payrollCalculations)
       setPreviewMode(true)
       setShowCalculations(true)

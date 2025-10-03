@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, ParameterType } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -34,11 +34,11 @@ const BAREME_IRPP = [
   { ordre: 4, seuil_min: 3000001, seuil_max: null, taux: 40, description: "Au-dessus de 3.000.000 FCFA" }
 ]
 
-async function seedForTenant(tenant: any, dateEffet: Date) {
+async function seedForTenant(tenant: { id: string; companyName: string }, dateEffet: Date) {
   console.log(`\n📊 ${tenant.companyName}`)
 
-  let statsParams = { created: 0, existing: 0 }
-  let statsIrpp = { created: 0, existing: 0 }
+  const statsParams = { created: 0, existing: 0 }
+  const statsIrpp = { created: 0, existing: 0 }
 
   // Paramètres fiscaux
   for (const param of PARAMETRES_FISCAUX) {
@@ -50,7 +50,7 @@ async function seedForTenant(tenant: any, dateEffet: Date) {
       statsParams.existing++
     } else {
       await prisma.fiscalParameter.create({
-        data: { ...param, tenantId: tenant.id, isActive: true, dateEffet, dateFin: null, type: param.type as any }
+        data: { ...param, tenantId: tenant.id, isActive: true, dateEffet, dateFin: null, type: param.type as ParameterType }
       })
       console.log(`  ✅ ${param.code} (${param.value}${param.unit})`)
       statsParams.created++

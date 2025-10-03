@@ -42,7 +42,7 @@ export interface PayslipStats {
 export interface Rubrique {
   code: string
   libelle: string
-  type: "GAIN_BRUT" | "COTISATION" | "GAIN_NON_SOUMIS" | "RETENUE_NON_SOUMISE"
+  type: "GAIN_BRUT" | "COTISATION" | "GAIN_NON_SOUMIS" | "RETENUE_NON_SOUMISE" | "ELEMENT_NON_IMPOSABLE"
   isActive: boolean
   montant?: number
   valeurSaisie?: number | null

@@ -2,6 +2,7 @@ import { Employee, PayrollParameter, RubriqueAmount } from './review-types'
 import { Rubrique } from './rubrique-types'
 import { calculateRubriqueValue } from './payroll-calculations'
 import { calculateArrondi } from './irpp-calculation'
+import type { ParametresFiscaux } from '@/hooks/useParametresFiscaux'
 
 /**
  * Interface pour les totaux calculés
@@ -17,6 +18,7 @@ export interface PayrollTotals {
 
 /**
  * Calcule tous les totaux de paie pour un employé
+ * MODIFIÉ: Utilise les paramètres fiscaux depuis la DB
  */
 export function calculatePayrollTotals(
   allRubriquesToShow: Rubrique[],
@@ -24,13 +26,14 @@ export function calculatePayrollTotals(
   parameters: PayrollParameter[],
   amounts: RubriqueAmount[],
   month: string,
-  year: string
+  year: string,
+  parametresFiscaux?: ParametresFiscaux
 ): PayrollTotals {
   // Calculer les gains bruts
   const totalGainsBruts = allRubriquesToShow
     .filter(r => r.type === 'GAIN_BRUT')
     .reduce((sum, r) => {
-      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow)
+      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux)
       return sum + value
     }, 0)
 
@@ -38,19 +41,23 @@ export function calculatePayrollTotals(
   const totalGainsNonSoumis = allRubriquesToShow
     .filter(r => r.type === 'GAIN_NON_SOUMIS')
     .reduce((sum, r) => {
-      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow)
+      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux)
       return sum + value
     }, 0)
+
+  // Récupérer les taux CNSS depuis les paramètres fiscaux
+  const cnssTauxEmploye = parametresFiscaux?.cnss.tauxEmploye ?? 4
+  const cnssTauxTotal = parametresFiscaux ? (parametresFiscaux.cnss.tauxEmploye + parametresFiscaux.cnss.tauxEmployeur) : 12
 
   // Calculer les cotisations salariales uniquement (codes 3xxx)
   const totalCotisations = allRubriquesToShow
     .filter(r => r.type === 'COTISATION')
     .reduce((sum, r) => {
-      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow)
+      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux)
 
-      // CNSS (3100) : part salariale = 4/12 du total
+      // CNSS (3100) : part salariale = tauxEmploye / tauxTotal (ex: 4/12)
       if (r.code === '3100') {
-        return sum + (value * (4/12))
+        return sum + (value * (cnssTauxEmploye / cnssTauxTotal))
       }
 
       // AT, PF, Retraite comp., Retraite base : charges 100% patronales, ne pas inclure
@@ -66,7 +73,7 @@ export function calculatePayrollTotals(
   const totalRetenuesNonSoumises = allRubriquesToShow
     .filter(r => r.type === 'RETENUE_NON_SOUMISE')
     .reduce((sum, r) => {
-      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow)
+      const value = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux)
       return sum + value
     }, 0)
 

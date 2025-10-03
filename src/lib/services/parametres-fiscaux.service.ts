@@ -6,18 +6,35 @@ import { prisma } from '@/lib/prisma'
 export class ParametresFiscauxService {
   /**
    * Récupère un paramètre fiscal par code
-   * Prend le plus récent si plusieurs versions existent
+   * Prend le paramètre valide à la date donnée ou le plus récent si pas de date
    */
   static async getParametre(
     tenantId: string,
-    code: string
+    code: string,
+    periode?: Date
   ) {
+    const whereClause: {
+      tenantId: string
+      code: string
+      isActive: true
+      dateEffet?: { lte: Date }
+      OR?: Array<{ dateFin: null } | { dateFin: { gte: Date } }>
+    } = {
+      tenantId,
+      code,
+      isActive: true
+    }
+
+    if (periode) {
+      whereClause.dateEffet = { lte: periode }
+      whereClause.OR = [
+        { dateFin: null },
+        { dateFin: { gte: periode } }
+      ]
+    }
+
     const parametre = await prisma.fiscalParameter.findFirst({
-      where: {
-        tenantId,
-        code,
-        isActive: true
-      },
+      where: whereClause,
       orderBy: { dateEffet: 'desc' }
     })
 
@@ -33,28 +50,45 @@ export class ParametresFiscauxService {
    */
   static async getValue(
     tenantId: string,
-    code: string
+    code: string,
+    periode?: Date
   ): Promise<number> {
-    const parametre = await this.getParametre(tenantId, code)
+    const parametre = await this.getParametre(tenantId, code, periode)
     return Number(parametre.value)
   }
 
   /**
    * Récupère plusieurs paramètres fiscaux en une seule requête
-   * Note: Pour simplifier, on récupère les paramètres actifs sans filtre de date
-   * Si plusieurs versions existent, on prend la plus récente
+   * Prend les paramètres valides à la date donnée ou les plus récents si pas de date
    */
   static async getParametres(
     tenantId: string,
-    codes: string[]
+    codes: string[],
+    periode?: Date
   ): Promise<Record<string, number>> {
+    const whereClause: {
+      tenantId: string
+      code: { in: string[] }
+      isActive: true
+      dateEffet?: { lte: Date }
+      OR?: Array<{ dateFin: null } | { dateFin: { gte: Date } }>
+    } = {
+      tenantId,
+      code: { in: codes },
+      isActive: true
+    }
+
+    if (periode) {
+      whereClause.dateEffet = { lte: periode }
+      whereClause.OR = [
+        { dateFin: null },
+        { dateFin: { gte: periode } }
+      ]
+    }
+
     // Récupérer tous les paramètres actifs pour ce tenant
     const parametres = await prisma.fiscalParameter.findMany({
-      where: {
-        tenantId,
-        code: { in: codes },
-        isActive: true
-      },
+      where: whereClause,
       orderBy: { dateEffet: 'desc' }
     })
 

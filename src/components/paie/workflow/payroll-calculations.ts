@@ -3,9 +3,11 @@ import { Employee, PayrollParameter, RubriqueAmount } from './review-types'
 import { Rubrique } from './rubrique-types'
 import { getParameterValue, getAmountValue, calculateAnneesAnciennete } from './payroll-utils'
 import { calculateIRPP, getGlobalMontantArrondi } from './irpp-calculation'
+import type { ParametresFiscaux } from '@/hooks/useParametresFiscaux'
 
 /**
  * Calcule la valeur d'une rubrique selon son type et sa formule
+ * MODIFIÉ: Utilise les paramètres fiscaux depuis la DB au lieu de valeurs hardcodées
  */
 export function calculateRubriqueValue(
   rubrique: Rubrique,
@@ -15,6 +17,7 @@ export function calculateRubriqueValue(
   month: string,
   year: string,
   allRubriquesToShow: Rubrique[],
+  parametresFiscaux?: ParametresFiscaux,
   skipBrutCalculation = false
 ): number {
   // Calcul du salaire de base
@@ -92,23 +95,44 @@ export function calculateRubriqueValue(
   const getSalaireBrutTotal = () => {
     return allRubriquesToShow
       .filter((gain: Rubrique) => gain.type === 'GAIN_BRUT')
-      .reduce((sum: number, gain: Rubrique) => sum + calculateRubriqueValue(gain, employee, parameters, amounts, month, year, allRubriquesToShow, true), 0)
+      .reduce((sum: number, gain: Rubrique) => sum + calculateRubriqueValue(gain, employee, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux, true), 0)
   }
 
-  // Cotisations - UTILISE LES FORMULES CORRECTES (alignées avec la DB)
+  // ========== COTISATIONS - UTILISE LA BASE DE DONNÉES ==========
   const salaireBrutTotal = getSalaireBrutTotal()
 
-  // CNSS - Retenue totale (4% salariale + 8% patronale = 12% plafonné à 1 200 000)
-  // Formule DB: MIN(salaireBrut, 1200000) * 0.12
-  if (rubrique.code === '3100') return Math.min(salaireBrutTotal, 1200000) * 0.12
+  // Récupération des paramètres fiscaux (avec valeurs par défaut si non fournis)
+  const cnssPlafond = parametresFiscaux?.cnss.plafond ?? 1200000
+  const cnssTauxTotal = parametresFiscaux ? (parametresFiscaux.cnss.tauxEmploye + parametresFiscaux.cnss.tauxEmployeur) : 12
+  const afPlafond = parametresFiscaux?.allocationsFamiliales.plafond ?? 600000
+  const afTaux = parametresFiscaux?.allocationsFamiliales.taux ?? 10.03
+  const atPlafond = parametresFiscaux?.accidentsTravail.plafond ?? 600000
+  const atTaux = parametresFiscaux?.accidentsTravail.taux ?? 2.25
+  const tusTaux = parametresFiscaux?.tus.tauxAdminFiscale ?? 4.125
+  const tusSSTaux = parametresFiscaux?.tus.tauxSecuSociale ?? 3.375
+  const camuTaux = parametresFiscaux?.camu.taux ?? 0.5
+  const camuSeuil = parametresFiscaux?.camu.seuil ?? 500000
+  const taxeLocal = parametresFiscaux?.taxesLocales.local ?? 1000
+  const taxeExpat = parametresFiscaux?.taxesLocales.expat ?? 5000
+  const taxeRegionale = parametresFiscaux?.taxesLocales.regionale ?? 2400
 
-  // SS - Allocations familiales (10.03% plafonné à 600 000)
-  // Formule DB: MIN(salaireBrut, 600000) * 0.1003
-  if (rubrique.code === '3110') return Math.min(salaireBrutTotal, 600000) * 0.1003
+  // CNSS - Retenue totale (4% salariale + 8% patronale = 12% plafonné)
+  // Formule DB: MIN(salaireBrut, plafond) * (tauxEmploye + tauxEmployeur) / 100
+  if (rubrique.code === '3100') {
+    return Math.min(salaireBrutTotal, cnssPlafond) * (cnssTauxTotal / 100)
+  }
 
-  // SS - Accident de travail (2.25% plafonné à 600 000)
-  // Formule DB: MIN(salaireBrut, 600000) * 0.0225
-  if (rubrique.code === '3120') return Math.min(salaireBrutTotal, 600000) * 0.0225
+  // SS - Allocations familiales (plafonné)
+  // Formule DB: MIN(salaireBrut, plafond) * taux / 100
+  if (rubrique.code === '3110') {
+    return Math.min(salaireBrutTotal, afPlafond) * (afTaux / 100)
+  }
+
+  // SS - Accident de travail (plafonné)
+  // Formule DB: MIN(salaireBrut, plafond) * taux / 100
+  if (rubrique.code === '3120') {
+    return Math.min(salaireBrutTotal, atPlafond) * (atTaux / 100)
+  }
 
   // Retenue IRPP du mois
   // Formule DB: calculerIRPPMensuel(salaireBrut, avantagesNature, situationFamiliale, nbEnfants)
@@ -120,25 +144,30 @@ export function calculateRubriqueValue(
   // ⚠️ ATTENTION: Ces deux taxes sont PATRONALES (pas retenues sur salaire)
   // Mais elles apparaissent dans le bulletin pour information
 
-  // Taxe unique sur salaire → Administration Fiscale (4.125%) - PATRONALE
-  // Formule DB: salaireBrut * 0.04125
-  if (rubrique.code === '3530') return salaireBrutTotal * 0.04125
-
-  // SS - Taxe unique sur salaire → Sécurité Sociale (3.375%) - PATRONALE
-  // Formule DB: salaireBrut * 0.03375
-  if (rubrique.code === '3130') return salaireBrutTotal * 0.03375
-
-  // Retenue CAMU (0.5% sur excédent > 500 000)
-  // Formule DB: MAX(0, (salaireBrut - cotisationsSociales - 500000) * 0.005)
-  if (rubrique.code === '3540') {
-    const cotisationsSociales = Math.min(salaireBrutTotal, 1200000) * 0.04
-    return Math.max(0, (salaireBrutTotal - cotisationsSociales - 500000) * 0.005)
+  // Taxe unique sur salaire → Administration Fiscale - PATRONALE
+  // Formule DB: salaireBrut * taux / 100
+  if (rubrique.code === '3530') {
+    return salaireBrutTotal * (tusTaux / 100)
   }
 
-  // Taxes sur les locaux
-  if (rubrique.code === '3550') return 1000 // Taxe locaux (local)
-  if (rubrique.code === '3560') return 5000 // Taxe locaux (Expat)
-  if (rubrique.code === '3570') return 2400 // Taxe régionale
+  // SS - Taxe unique sur salaire → Sécurité Sociale - PATRONALE
+  // Formule DB: salaireBrut * taux / 100
+  if (rubrique.code === '3130') {
+    return salaireBrutTotal * (tusSSTaux / 100)
+  }
+
+  // Retenue CAMU (sur excédent)
+  // Formule DB: MAX(0, (salaireBrut - cotisationsSociales - seuil) * taux / 100)
+  if (rubrique.code === '3540') {
+    const cnssTauxEmploye = parametresFiscaux?.cnss.tauxEmploye ?? 4
+    const cotisationsSociales = Math.min(salaireBrutTotal, cnssPlafond) * (cnssTauxEmploye / 100)
+    return Math.max(0, (salaireBrutTotal - cotisationsSociales - camuSeuil) * (camuTaux / 100))
+  }
+
+  // Taxes sur les locaux (montants fixes depuis DB)
+  if (rubrique.code === '3550') return taxeLocal
+  if (rubrique.code === '3560') return taxeExpat
+  if (rubrique.code === '3570') return taxeRegionale
 
   // Arrondis net à payer
   if (rubrique.code === '9110') return getGlobalMontantArrondi()

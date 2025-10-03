@@ -50,6 +50,7 @@ export interface CotisationsEmploye {
   cnss: number
   camu: number
   irpp: number
+  tol: number
   total: number
 }
 

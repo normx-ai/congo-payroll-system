@@ -34,10 +34,13 @@ export class GainsCalculator {
       rubriques.push(this.createPrimeAnciennete(primeAnciennete))
     }
 
-    // 3. RUBRIQUES SAISIES
+    // 3. RUBRIQUES SAISIES (seulement les gains, pas les retenues)
     for (const saisie of data.rubriquesSaisies) {
       const rubrique = await this.calculateRubriqueSaisie(saisie, data.baseSalary, data.tenantId)
-      if (rubrique) rubriques.push(rubrique)
+      // NE PAS inclure les retenues (6xxx) et éléments non imposables (9xxx) dans les gains
+      if (rubrique && rubrique.type !== 'RETENUE_NON_SOUMISE' && rubrique.type !== 'ELEMENT_NON_IMPOSABLE') {
+        rubriques.push(rubrique)
+      }
     }
 
     // 4. CALCUL DES TOTAUX

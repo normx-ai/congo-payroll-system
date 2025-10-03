@@ -37,7 +37,8 @@ export function handleApiError(error: ApiError): NextResponse {
   // Erreur Prisma (base de données)
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === 'P2002') {
-      const field = (error.meta?.target as string[])?.[0]
+      const target = error.meta?.target
+      const field = Array.isArray(target) && typeof target[0] === 'string' ? target[0] : ''
       const messages: Record<string, string> = {
         cnssNumber: 'Ce numéro CNSS est déjà utilisé',
         nui: 'Ce NUI est déjà utilisé',
@@ -99,7 +100,9 @@ export function handleApiError(error: ApiError): NextResponse {
 
     const message = safeErrors.some(msg => error.message.includes(msg))
       ? error.message
-      : 'Une erreur est survenue'
+      : isDevelopment
+        ? error.message  // En développement, afficher le vrai message
+        : 'Une erreur est survenue'
 
     return NextResponse.json(
       {

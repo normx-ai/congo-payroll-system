@@ -147,12 +147,12 @@ export class SharedPayrollEngine {
 
     const params = await ParametresFiscauxService.getParametres(
       tenantId,
-      ['ALLOC_FAM_TAUX', 'ALLOC_FAM_PLAFOND'],
+      ['AF_TAUX', 'AF_PLAFOND'],
       periode
     )
 
-    const plafond = params.ALLOC_FAM_PLAFOND || 600000
-    const taux = params.ALLOC_FAM_TAUX || 10.03
+    const plafond = params.AF_PLAFOND || 600000
+    const taux = params.AF_TAUX || 10.03
 
     const baseImposable = Math.min(brutSocial, plafond)
     const montant = Math.round(baseImposable * (taux / 100))
@@ -185,12 +185,12 @@ export class SharedPayrollEngine {
 
     const params = await ParametresFiscauxService.getParametres(
       tenantId,
-      ['ACCIDENT_TRAVAIL_TAUX', 'ACCIDENT_TRAVAIL_PLAFOND'],
+      ['AT_TAUX', 'AT_PLAFOND'],
       periode
     )
 
-    const plafond = params.ACCIDENT_TRAVAIL_PLAFOND || 600000
-    const taux = params.ACCIDENT_TRAVAIL_TAUX || 2.25
+    const plafond = params.AT_PLAFOND || 600000
+    const taux = params.AT_TAUX || 2.25
 
     const baseImposable = Math.min(brutSocial, plafond)
     const montant = Math.round(baseImposable * (taux / 100))
@@ -223,11 +223,11 @@ export class SharedPayrollEngine {
 
     const params = await ParametresFiscauxService.getParametres(
       tenantId,
-      ['TAXE_UNIQUE_TAUX'],
+      ['TUS_SS_TAUX'],
       periode
     )
 
-    const taux = params.TAXE_UNIQUE_TAUX || 3.375
+    const taux = params.TUS_SS_TAUX || 3.375
 
     const montant = Math.round(brutSocial * (taux / 100))
 
@@ -258,12 +258,17 @@ export class SharedPayrollEngine {
     const { brutSocial, employee } = context
 
     // Utiliser la fonction IRPP existante du client (qui est correcte)
-    type IrppEmployee = {
-      baseSalary?: number
-      maritalStatus?: string
-      dependents?: number
+    const irppEmployee = {
+      id: employee.id,
+      firstName: '',
+      lastName: '',
+      employeeCode: '',
+      position: '',
+      baseSalary: employee.baseSalary,
+      maritalStatus: employee.maritalStatus,
+      childrenCount: employee.childrenCount
     }
-    const montant = calculateIRPPLegacy(brutSocial, employee as IrppEmployee)
+    const montant = calculateIRPPLegacy(brutSocial, irppEmployee)
 
     return {
       code: '3510',
@@ -329,11 +334,11 @@ export class SharedPayrollEngine {
 
     const params = await ParametresFiscauxService.getParametres(
       tenantId,
-      ['CAMU_TAUX', 'CAMU_SEUIL', 'CNSS_EMPLOYE', 'CNSS_PLAFOND'],
+      ['CAMU_CONTRIBUTION', 'CAMU_SEUIL', 'CNSS_EMPLOYE', 'CNSS_PLAFOND'],
       periode
     )
 
-    const taux = params.CAMU_TAUX || 0.5
+    const taux = params.CAMU_CONTRIBUTION || 0.5
     const seuil = params.CAMU_SEUIL || 500000
     const tauxCnssEmploye = params.CNSS_EMPLOYE || 4
     const plafondCnss = params.CNSS_PLAFOND || 1200000

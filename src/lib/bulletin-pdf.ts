@@ -1,21 +1,58 @@
-import puppeteer from 'puppeteer'
+import puppeteer, { Browser } from 'puppeteer'
+
+// Pool de navigateurs partagés pour améliorer les performances
+let browserInstance: Browser | null = null
+let browserPromise: Promise<Browser> | null = null
+
+async function getBrowser(): Promise<Browser> {
+  // Si un navigateur est en cours de lancement, attendre
+  if (browserPromise) {
+    return browserPromise
+  }
+
+  // Si le navigateur existe et est connecté, le retourner
+  if (browserInstance?.connected) {
+    return browserInstance
+  }
+
+  // Lancer un nouveau navigateur
+  browserPromise = puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu'
+    ]
+  })
+
+  browserInstance = await browserPromise
+  browserPromise = null
+
+  // Gérer la fermeture propre du navigateur
+  browserInstance.on('disconnected', () => {
+    browserInstance = null
+  })
+
+  return browserInstance
+}
 
 export class BulletinPDFGenerator {
   /**
    * Génère un PDF à partir du HTML
    */
   static async generatePDF(html: string): Promise<Buffer> {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    })
+    const browser = await getBrowser()
+    const page = await browser.newPage()
 
     try {
-      const page = await browser.newPage()
-
       // Configurer la page pour le format A4
       await page.setContent(html, {
-        waitUntil: ['networkidle0', 'domcontentloaded']
+        waitUntil: 'domcontentloaded',
+        timeout: 60000
       })
 
       // Générer le PDF
@@ -32,34 +69,36 @@ export class BulletinPDFGenerator {
 
       return Buffer.from(pdf)
     } finally {
-      await browser.close()
+      await page.close()
     }
   }
 
   /**
-   * Génère un PDF optimisé pour les bulletins de paie
+   * Génère un PDF optimisé pour les bulletins de paie (réutilise le navigateur)
    */
   static async generateBulletinPDF(html: string): Promise<Buffer> {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu'
-      ]
-    })
+    const browser = await getBrowser()
+    const page = await browser.newPage()
 
     try {
-      const page = await browser.newPage()
-
-      // Optimisations pour les bulletins
-      await page.setContent(html, {
-        waitUntil: ['networkidle0', 'domcontentloaded']
+      // Désactiver uniquement les images et médias pour accélérer (garder les styles)
+      await page.setRequestInterception(true)
+      page.on('request', (req) => {
+        if (['image', 'media'].includes(req.resourceType())) {
+          req.abort()
+        } else {
+          req.continue()
+        }
       })
+
+      // Optimisations pour les bulletins - Augmenter timeout et utiliser domcontentloaded uniquement
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000 // 60 secondes au lieu de 30
+      })
+
+      // Attendre un peu pour s'assurer que le rendu est terminé (méthode compatible)
+      await new Promise(resolve => setTimeout(resolve, 300))
 
       // Configuration spécifique pour les bulletins de paie
       const pdf = await page.pdf({
@@ -77,7 +116,17 @@ export class BulletinPDFGenerator {
 
       return Buffer.from(pdf)
     } finally {
-      await browser.close()
+      await page.close()
+    }
+  }
+
+  /**
+   * Ferme le navigateur partagé (utile pour le nettoyage)
+   */
+  static async closeBrowser(): Promise<void> {
+    if (browserInstance) {
+      await browserInstance.close()
+      browserInstance = null
     }
   }
 }

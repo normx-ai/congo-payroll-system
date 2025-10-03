@@ -1,10 +1,10 @@
 // Moteur de paie refactorisé - NORM PAIE
 // Fichier: 75 lignes
 
-import { BulletinPaie, EmployeePaieData, RubriqueEmploye } from './types'
+import { BulletinPaie, EmployeePaieData, RubriqueEmploye, RubriqueType } from './types'
 import { GainsCalculator } from './gains-calculator'
 import { RetenuesCalculator } from './retenues-calculator'
-import { calculateChargesEmployeur, calculateNetAPayer } from '../payroll-cotisations'
+import { calculateChargesEmployeur } from '../payroll-cotisations'
 
 export class PayrollEngine {
 
@@ -61,11 +61,28 @@ export class PayrollEngine {
     )
 
     // 7. CALCUL NET À PAYER
-    const netAPayer = calculateNetAPayer(
-      assiettes.brutFiscal,
-      retenues.cotisationsEmploye.total,
-      retenues.autresRetenues.total
-    )
+    console.log('[DEBUG engine.ts] Calcul Net à Payer:')
+    console.log('  - brutFiscal:', assiettes.brutFiscal)
+    console.log('  - gainsNonSoumis:', gains.totalGainsNonSoumis)
+    console.log('  - cotisationsEmploye.total:', retenues.cotisationsEmploye.total)
+    console.log('  - autresRetenues.total:', retenues.autresRetenues.total)
+    console.log('  - autresRetenues.rubriques:', retenues.autresRetenues.rubriques.map(r => ({ code: r.code, montant: r.montant })))
+
+    // Récupérer l'arrondi 9110 depuis rubriquesSaisies
+    const arrondi9110 = data.rubriquesSaisies.find(r => r.code === '9110')
+    const montantArrondi = arrondi9110 ? arrondi9110.montant : 0
+    console.log('  - arrondi 9110:', montantArrondi)
+
+    // FORMULE CORRECTE: Net = BrutFiscal + GainsNonSoumis - Cotisations - AutresRetenues + Arrondi
+    const netAvantArrondi = assiettes.brutFiscal + gains.totalGainsNonSoumis - retenues.cotisationsEmploye.total - retenues.autresRetenues.total
+
+    // Ajouter l'arrondi au net (peut être positif ou négatif)
+    const netAPayer = netAvantArrondi + montantArrondi
+
+    console.log('  - netAvantArrondi:', netAvantArrondi)
+    console.log('  - netAPayer final (avec arrondi):', netAPayer)
+    console.log('  - Formule: brutFiscal + gainsNonSoumis - cotisationsEmploye - autresRetenues + arrondi')
+    console.log('  -        =', assiettes.brutFiscal, '+', gains.totalGainsNonSoumis, '-', retenues.cotisationsEmploye.total, '-', retenues.autresRetenues.total, '+', montantArrondi, '=', netAPayer)
 
     // 8. COUT TOTAL EMPLOYEUR
     const coutTotalEmployeur = assiettes.brutSocial + chargesEmployeur.total
@@ -150,7 +167,7 @@ export class PayrollEngine {
       .map(calc => ({
         code: calc.code,
         libelle: calc.libelle,
-        type: calc.type,
+        type: calc.type as RubriqueType,
         modeCalcul: calc.tauxEmploye || calc.tauxEmployeur
           ? { type: 'TAUX', valeur: calc.tauxEmploye || calc.tauxEmployeur || 0 }
           : { type: 'FORMULE', valeur: calc.baseLibelle || '' },

@@ -54,11 +54,11 @@ export async function calculateCAMU(
 ): Promise<CotisationResult> {
   const params = await ParametresFiscauxService.getParametres(
     tenantId,
-    ['CAMU_TAUX', 'CAMU_SEUIL', 'CNSS_EMPLOYE', 'CNSS_PLAFOND'],
+    ['CAMU_CONTRIBUTION', 'CAMU_SEUIL', 'CNSS_EMPLOYE', 'CNSS_PLAFOND'],
     periode
   )
 
-  const taux = params.CAMU_TAUX || 0.5
+  const taux = params.CAMU_CONTRIBUTION || 0.5
   const seuil = params.CAMU_SEUIL || 500000
   const tauxCnssEmploye = params.CNSS_EMPLOYE || 4
   const plafondCnss = params.CNSS_PLAFOND || 1200000
@@ -137,17 +137,25 @@ export async function calculateCotisationsEmploye(
   cnss: number
   camu: number
   irpp: number
+  tol: number
   total: number
 }> {
   const cnssResult = await calculateCNSS(tenantId, brutSocial, periode)
   const camuResult = await calculateCAMU(tenantId, brutSocial, periode)
   const irpp = await calculateIRPP(tenantId, brutFiscal, chargesDeductibles, quotientFamilial, periode)
 
+  // TOL - Taxe sur les Ordures et Lieux (3550) - montant fixe
+  // 1000 FCFA pour les locaux (3550), 5000 FCFA pour les expats (3560)
+  const tol = 1000
+
+  console.log('[DEBUG calculateCotisationsEmploye] TOL:', { tol })
+
   return {
     cnss: cnssResult.employe,
     camu: camuResult.employe,
     irpp,
-    total: cnssResult.employe + camuResult.employe + irpp
+    tol,
+    total: cnssResult.employe + camuResult.employe + irpp + tol
   }
 }
 
@@ -176,21 +184,21 @@ export async function calculateChargesEmployeur(
   // Allocations familiales (3110), Accidents de travail (3120), Taxe unique SS (3130)
   const params = await ParametresFiscauxService.getParametres(
     tenantId,
-    ['ALLOC_FAM_TAUX', 'ALLOC_FAM_PLAFOND', 'ACCIDENT_TRAVAIL_TAUX', 'ACCIDENT_TRAVAIL_PLAFOND', 'TAXE_UNIQUE_TAUX', 'TUS_TAUX'],
+    ['AF_TAUX', 'AF_PLAFOND', 'AT_TAUX', 'AT_PLAFOND', 'TUS_SS_TAUX', 'TUS_TAUX'],
     periode
   )
 
-  const plafondAlloc = params.ALLOC_FAM_PLAFOND || 600000
-  const tauxAlloc = params.ALLOC_FAM_TAUX || 10.03
+  const plafondAlloc = params.AF_PLAFOND || 600000
+  const tauxAlloc = params.AF_TAUX || 10.03
   const allocationsFamiliales = Math.round(Math.min(brutSocial, plafondAlloc) * (tauxAlloc / 100))
 
   // Accidents de travail (3120)
-  const plafondAccident = params.ACCIDENT_TRAVAIL_PLAFOND || 600000
-  const tauxAccident = params.ACCIDENT_TRAVAIL_TAUX || 2.25
+  const plafondAccident = params.AT_PLAFOND || 600000
+  const tauxAccident = params.AT_TAUX || 2.25
   const accidentsTravail = Math.round(Math.min(brutSocial, plafondAccident) * (tauxAccident / 100))
 
   // SS - Taxe unique sur salaire → Sécurité Sociale (3130)
-  const tauxTaxeUniqueSS = params.TAXE_UNIQUE_TAUX || 3.375
+  const tauxTaxeUniqueSS = params.TUS_SS_TAUX || 3.375
   const taxeUniqueSS = Math.round(brutSocial * (tauxTaxeUniqueSS / 100))
 
   // TUS - Taxe unique sur salaire → Administration Fiscale (3530)

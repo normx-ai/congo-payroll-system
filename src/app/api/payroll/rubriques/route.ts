@@ -5,6 +5,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { handleCatchError } from '@/lib/error-handler'
+import { Prisma } from '@prisma/client'
 
 // GET - Lister toutes les rubriques disponibles
 export async function GET(req: NextRequest) {
@@ -19,11 +20,7 @@ export async function GET(req: NextRequest) {
     const actif = searchParams.get('actif') // 'true', 'false'
 
     // 1. Récupérer toutes les rubriques depuis la base de données
-    const whereClause: {
-      tenantId: string
-      isActive?: boolean
-      type?: string | { in: string[] }
-    } = {
+    const whereClause: Prisma.RubriqueWhereInput = {
       tenantId: session.user.tenantId
     }
 
@@ -42,7 +39,7 @@ export async function GET(req: NextRequest) {
     }
 
     const rubriquesBD = await prisma.rubrique.findMany({
-      where: whereClause as Parameters<typeof prisma.rubrique.findMany>[0]['where'],
+      where: whereClause,
       orderBy: { ordre: 'asc' }
     })
 

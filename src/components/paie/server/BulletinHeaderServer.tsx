@@ -15,25 +15,25 @@ interface BulletinHeaderServerProps {
 
 export function BulletinHeaderServer({ company, calculation, periodStart, periodEnd }: BulletinHeaderServerProps) {
   return (
-    <div className="border border-black mb-4">
+    <div className="border border-black mb-2" style={{fontSize: '9px'}}>
       <div className="grid grid-cols-3 border-b border-black">
-        <div className="border-r border-black p-2 font-bold bg-gray-100">
+        <div className="border-r border-black py-0.5 px-1 font-normal bg-gray-100">
           BULLETIN DE PAIE
         </div>
-        <div className="border-r border-black p-2 text-center">
+        <div className="border-r border-black py-0.5 px-1 text-center">
           XAF
         </div>
-        <div className="p-2 text-center">
+        <div className="py-0.5 px-1 text-center">
           <div>PAIE DU {periodStart} AU {periodEnd}</div>
         </div>
       </div>
 
       <div className="grid grid-cols-2">
-        <div className="border-r border-black p-4">
-          <div className="flex items-start gap-6">
+        <div className="border-r border-black p-2">
+          <div className="flex items-start gap-3">
             {company.logoUrl && (
               <div className="flex-shrink-0">
-                <div className="relative w-40 h-32">
+                <div className="relative w-24 h-20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={company.logoUrl.startsWith('http') ? company.logoUrl : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}${company.logoUrl}`}
@@ -45,47 +45,47 @@ export function BulletinHeaderServer({ company, calculation, periodStart, period
               </div>
             )}
             <div className="flex-1">
-              <div className="font-bold mb-2">{company.name}</div>
+              <div className="font-normal mb-1">{company.name}</div>
               <div>{company.address}</div>
               {company.city && <div>{company.city}</div>}
-              <div className="mt-2">NIU : {company.niu || ''}</div>
+              <div className="mt-1">NIU : {company.niu || ''}</div>
             </div>
           </div>
         </div>
 
-        <div className="p-4 space-y-1 text-xs">
-          <div className="font-bold text-base mb-2 uppercase border-b border-gray-300 pb-1">
+        <div className="p-2 space-y-0.5">
+          <div className="font-normal mb-1 uppercase border-b border-gray-300 pb-0.5" style={{fontSize: '10px'}}>
             {calculation.firstName || ''} {calculation.lastName || ''}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <div>Matricule : {calculation.employeeCode}</div>
-            <div>Date d&apos;embauche : {calculation.employeeData?.dateEmbauche || 'N/A'}</div>
+            <div>Date emb. : {calculation.employeeData?.dateEmbauche || 'N/A'}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>Département : {calculation.employeeData?.departement || ''}</div>
-            <div>Ancienneté : {calculation.employeeData?.anciennete || 'N/A'}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>Dépt. : {calculation.employeeData?.departement || ''}</div>
+            <div>Anc. : {calculation.employeeData?.anciennete || 'N/A'}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <div>Service : {calculation.employeeData?.service || ''}</div>
             <div>Qualif. : {calculation.employeeData?.qualification || ''}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <div>Emploi : {calculation.position}</div>
             <div>Cat. : {calculation.employeeData?.categorie || ''}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>Situation familiale : {calculation.employeeData?.situationFamiliale || 'Célibataire'}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>Sit. fam. : {calculation.employeeData?.situationFamiliale || 'Célibataire'}</div>
             <div>Indice : {calculation.employeeData?.indice || ''}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>Nombre d&apos;enfants : {calculation.employeeData?.nombreEnfants || 0}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>Nb enfants : {calculation.employeeData?.nombreEnfants || 0}</div>
             <div>Niveau : {calculation.employeeData?.niveau || ''}</div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>Nombre de parts : {calculation.employeeData?.nombreParts || 1}</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>Nb parts : {calculation.employeeData?.nombreParts || 1}</div>
             <div></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
             <div>NIU : {calculation.employeeData?.niu || ''}</div>
             <div>N° CNSS : {calculation.employeeData?.numeroCNSS || ''}</div>
           </div>

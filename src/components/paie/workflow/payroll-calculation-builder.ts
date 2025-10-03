@@ -9,9 +9,11 @@ import {
   calculateAnciennete,
   calculateTauxAnciennete
 } from './payroll-utils'
+import type { ParametresFiscaux } from '@/hooks/useParametresFiscaux'
 
 /**
  * Construit l'objet PayrollCalculation pour BulletinPreview
+ * MODIFIÉ: Utilise les paramètres fiscaux depuis la DB
  */
 export function buildPayrollCalculation(
   selectedEmployeeData: Employee | undefined,
@@ -25,7 +27,8 @@ export function buildPayrollCalculation(
     totalGainsNonSoumis: number
     totalRetenues: number
     netAPayer: number
-  }
+  },
+  parametresFiscaux?: ParametresFiscaux
 ): PayrollCalculation {
   const { totalGainsBruts, totalGainsNonSoumis, totalRetenues, netAPayer } = totals
   const totalGains = totalGainsBruts + totalGainsNonSoumis
@@ -57,8 +60,8 @@ export function buildPayrollCalculation(
       anciennete: selectedEmployeeData?.seniority || calculateAnciennete(selectedEmployeeData, month, year)
     },
     rubriques: {
-      gains: buildGainsRubriques(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year),
-      retenues: buildRetenuesRubriques(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year, totalGainsBruts, totalGains),
+      gains: buildGainsRubriques(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year, parametresFiscaux),
+      retenues: buildRetenuesRubriques(allRubriquesToShow, selectedEmployeeData, parameters, amounts, month, year, totalGainsBruts, totalGains, parametresFiscaux),
       autresRetenues: []
     }
   }
@@ -73,18 +76,19 @@ function buildGainsRubriques(
   parameters: PayrollParameter[],
   amounts: RubriqueAmount[],
   month: string,
-  year: string
+  year: string,
+  parametresFiscaux?: ParametresFiscaux
 ) {
   return allRubriquesToShow
     .filter(r => r.type === 'GAIN_BRUT' || r.type === 'GAIN_NON_SOUMIS')
     .map(r => ({
       code: r.code,
       designation: r.libelle,
-      montant: calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow),
+      montant: calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux),
       quantite: getParameterValue(parameters, 'joursTravailles') || 26,
       taux: r.code === '1010' ? calculateTauxAnciennete(selectedEmployeeData, month, year) : (r.taux ? r.taux.toString() + '%' : ''),
       base: r.code === '1010' ? Number(selectedEmployeeData?.baseSalary || 0) : undefined,
-      type: r.type
+      type: r.type as 'GAIN_BRUT' | 'GAIN_NON_SOUMIS'
     }))
     // Retirer le filtre qui supprime les montants à 0
     // Les rubriques configurées doivent apparaître même avec un montant de 0
@@ -102,7 +106,8 @@ function buildRetenuesRubriques(
   month: string,
   year: string,
   totalGainsBruts: number,
-  totalGains: number
+  totalGains: number,
+  parametresFiscaux?: ParametresFiscaux
 ) {
   // Rubriques obligatoires qui doivent toujours apparaître même avec montant 0
   const mandatoryRetenues = ['3510', '3540', '9110'] // IRPP, CAMU et Arrondi
@@ -110,24 +115,28 @@ function buildRetenuesRubriques(
   return allRubriquesToShow
     .filter(r => r.type === 'RETENUE_NON_SOUMISE' || r.type === 'COTISATION' || r.type === 'ELEMENT_NON_IMPOSABLE')
     .map(r => {
-      const montant = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow)
+      const montant = calculateRubriqueValue(r, selectedEmployeeData, parameters, amounts, month, year, allRubriquesToShow, parametresFiscaux)
 
       // Debug pour IRPP et CAMU
       if (r.code === '3510' || r.code === '3540') {
         console.log(`Retenue ${r.code} (${r.libelle}): montant = ${montant}, totalGainsBruts = ${totalGainsBruts}`)
       }
 
+      // Calcul de la charge patronale avec taux depuis DB
+      const cnssTauxEmployeur = parametresFiscaux?.cnss.tauxEmployeur ?? 8
+      const cnssTauxTotal = parametresFiscaux ? (parametresFiscaux.cnss.tauxEmploye + parametresFiscaux.cnss.tauxEmployeur) : 12
+
       return {
         code: r.code,
         designation: r.libelle,
         montant: montant,
-        base: calculateRetenueBase(r.code, totalGainsBruts, totalGains),
-        taux: getRetenueTaux(r.code),
+        base: calculateRetenueBase(r.code, totalGainsBruts, totalGains, parametresFiscaux),
+        taux: getRetenueTaux(r.code, parametresFiscaux),
         chargePatronale: ['3100', '3110', '3120', '3530', '3130'].includes(r.code) ? (
-          r.code === '3100' ? montant * (8/12) :
+          r.code === '3100' ? montant * (cnssTauxEmployeur / cnssTauxTotal) :
           montant
         ) : 0,
-        type: r.type
+        type: r.type as 'COTISATION' | 'RETENUE_NON_SOUMISE' | 'ELEMENT_NON_IMPOSABLE'
       }
     })
     // Garder les rubriques obligatoires ou celles avec montant > 0
@@ -137,21 +146,29 @@ function buildRetenuesRubriques(
 
 /**
  * Calcule la base pour une retenue
+ * MODIFIÉ: Utilise les paramètres fiscaux depuis la DB
  */
-function calculateRetenueBase(code: string, totalGainsBruts: number, totalGains: number): number | undefined {
+function calculateRetenueBase(code: string, totalGainsBruts: number, totalGains: number, parametresFiscaux?: ParametresFiscaux): number | undefined {
+  const cnssPlafond = parametresFiscaux?.cnss.plafond ?? 1200000
+  const afPlafond = parametresFiscaux?.allocationsFamiliales.plafond ?? 600000
+  const atPlafond = parametresFiscaux?.accidentsTravail.plafond ?? 600000
+  const cnssTauxEmploye = parametresFiscaux?.cnss.tauxEmploye ?? 4
+  const camuSeuil = parametresFiscaux?.camu.seuil ?? 500000
+
   if (['3100', '3110', '3120', '3510', '3530', '3130', '3540'].includes(code)) {
-    if (code === '3100') return Math.min(totalGainsBruts, 1200000)
-    if (['3110', '3120'].includes(code)) return Math.min(totalGainsBruts, 600000)
+    if (code === '3100') return Math.min(totalGainsBruts, cnssPlafond)
+    if (code === '3110') return Math.min(totalGainsBruts, afPlafond)
+    if (code === '3120') return Math.min(totalGainsBruts, atPlafond)
     if (code === '3510') {
-      // Pour l'IRPP : Net imposable = salaire brut - CNSS (4%) - frais professionnels (20%)
-      const deductionCNSS = Math.min(totalGainsBruts, 1200000) * 0.04
+      // Pour l'IRPP : Net imposable = salaire brut - CNSS (taux employé) - frais professionnels (20%)
+      const deductionCNSS = Math.min(totalGainsBruts, cnssPlafond) * (cnssTauxEmploye / 100)
       const salaireApresCNSS = totalGainsBruts - deductionCNSS
       const netImposable = salaireApresCNSS * 0.80 // Après déduction 20% frais pro
       return netImposable
     }
     if (code === '3540') {
-      const cotisationsSociales = Math.min(totalGainsBruts, 1200000) * 0.04
-      return Math.max(0, totalGainsBruts - cotisationsSociales - 500000)
+      const cotisationsSociales = Math.min(totalGainsBruts, cnssPlafond) * (cnssTauxEmploye / 100)
+      return Math.max(0, totalGainsBruts - cotisationsSociales - camuSeuil)
     }
     return totalGainsBruts
   }
@@ -161,16 +178,24 @@ function calculateRetenueBase(code: string, totalGainsBruts: number, totalGains:
 
 /**
  * Retourne le taux pour une retenue
+ * MODIFIÉ: Utilise les paramètres fiscaux depuis la DB
  */
-function getRetenueTaux(code: string): string {
+function getRetenueTaux(code: string, parametresFiscaux?: ParametresFiscaux): string {
+  const cnssTauxTotal = parametresFiscaux ? (parametresFiscaux.cnss.tauxEmploye + parametresFiscaux.cnss.tauxEmployeur) : 12
+  const afTaux = parametresFiscaux?.allocationsFamiliales.taux ?? 10.03
+  const atTaux = parametresFiscaux?.accidentsTravail.taux ?? 2.25
+  const tusTaux = parametresFiscaux?.tus.tauxAdminFiscale ?? 4.125
+  const tusSSTaux = parametresFiscaux?.tus.tauxSecuSociale ?? 3.375
+  const camuTaux = parametresFiscaux?.camu.taux ?? 0.5
+
   const taux: { [key: string]: string } = {
-    '3100': '12%',
-    '3110': '10,03%',
-    '3120': '2,25%',
+    '3100': `${cnssTauxTotal}%`,
+    '3110': `${afTaux.toFixed(2)}%`,
+    '3120': `${atTaux.toFixed(2)}%`,
     '3510': '',
-    '3530': '4,125%',
-    '3130': '3,375%',
-    '3540': '0,5%'
+    '3530': `${tusTaux.toFixed(3)}%`,
+    '3130': `${tusSSTaux.toFixed(3)}%`,
+    '3540': `${camuTaux.toFixed(1)}%`
   }
   return taux[code] || ''
 }

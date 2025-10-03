@@ -91,8 +91,9 @@ export async function GET(
         retenues: {
           cotisationsEmploye: {
             cnss: 0,
-            irpp: 0,
             camu: 0,
+            irpp: 0,
+            tol: 0,
             total: 0
           },
           autresRetenues: {

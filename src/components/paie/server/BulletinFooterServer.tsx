@@ -55,58 +55,58 @@ export function BulletinFooterServer({
   conges
 }: BulletinFooterServerProps) {
   return (
-    <div className="mt-4 border border-black">
-      <div className="grid grid-cols-8 text-xs">
-        <div className="border-r border-black p-2 flex items-center" style={{gridColumn: 'span 6'}}>
+    <div className="mt-2 border border-black" style={{fontSize: '9px'}}>
+      <div className="grid grid-cols-8">
+        <div className="border-r border-black py-1 px-2 flex items-center" style={{gridColumn: 'span 6'}}>
           <div><strong>Mode de Règlement :</strong> {modeReglement}</div>
         </div>
-        <div className="p-2 text-right" style={{gridColumn: 'span 2'}}>
-          <div className="text-lg">NET A PAYER</div>
-          <div className="text-xl font-bold">{formatAmount(calculation.salaireNet)}</div>
+        <div className="py-1 px-2 text-right" style={{gridColumn: 'span 2'}}>
+          <div style={{fontSize: '11px'}}>NET A PAYER</div>
+          <div style={{fontSize: '14px'}} className="font-semibold">{formatAmount(calculation.salaireNet)}</div>
         </div>
       </div>
 
       <div className="border-t border-black">
-        <div className="grid grid-cols-8 bg-gray-100 border-b border-black text-center font-bold text-xs">
-          <div className="border-r border-black p-1">Cumuls</div>
-          <div className="border-r border-black p-1">Salaire Brut</div>
-          <div className="border-r border-black p-1">Net Imposable</div>
-          <div className="border-r border-black p-1">Ch. Salariales</div>
-          <div className="border-r border-black p-1">Ch. Patronales</div>
-          <div className="border-r border-black p-1">Base Congés</div>
-          <div className="border-r border-black p-1">IRPP</div>
-          <div className="p-1">TOL</div>
+        <div className="grid grid-cols-8 bg-gray-100 border-b border-black text-center font-normal">
+          <div className="border-r border-black py-0.5 px-0.5">Cumuls</div>
+          <div className="border-r border-black py-0.5 px-0.5">Sal. Brut</div>
+          <div className="border-r border-black py-0.5 px-0.5">Net Imp.</div>
+          <div className="border-r border-black py-0.5 px-0.5">Ch. Sal.</div>
+          <div className="border-r border-black py-0.5 px-0.5">Ch. Pat.</div>
+          <div className="border-r border-black py-0.5 px-0.5">Base Cg</div>
+          <div className="border-r border-black py-0.5 px-0.5">IRPP</div>
+          <div className="py-0.5 px-0.5">TOL</div>
         </div>
-        <div className="grid grid-cols-8 border-b border-black text-center text-xs">
-          <div className="border-r border-black p-1 font-bold">Mois</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateSalaireBrut(calculation))}</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateNetImposable(calculation))}</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateChargesSalariales(calculation))}</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateChargesPatronales(calculation))}</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateSalaireBrut(calculation))}</div>
-          <div className="border-r border-black p-1">{formatAmount(calculateIRPP(calculation))}</div>
-          <div className="p-1">{formatAmount(calculateTOL(calculation))}</div>
+        <div className="grid grid-cols-8 border-b border-black text-center">
+          <div className="border-r border-black py-0.5 px-0.5 font-normal">Mois</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateSalaireBrut(calculation))}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateNetImposable(calculation))}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateChargesSalariales(calculation))}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateChargesPatronales(calculation))}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateSalaireBrut(calculation))}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(calculateIRPP(calculation))}</div>
+          <div className="py-0.5 px-0.5">{formatAmount(calculateTOL(calculation))}</div>
         </div>
-        <div className="grid grid-cols-8 text-center text-xs">
-          <div className="border-r border-black p-1 font-bold">Année</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.salaireBrut)}</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.netImposable)}</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.chargesSalariales)}</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.chargesPatronales)}</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.basConges)}</div>
-          <div className="border-r border-black p-1">{formatAmount(cumulAnnuel.irpp)}</div>
-          <div className="p-1">{formatAmount(cumulAnnuel.tol)}</div>
+        <div className="grid grid-cols-8 text-center">
+          <div className="border-r border-black py-0.5 px-0.5 font-normal">Année</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.salaireBrut)}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.netImposable)}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.chargesSalariales)}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.chargesPatronales)}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.basConges)}</div>
+          <div className="border-r border-black py-0.5 px-0.5">{formatAmount(cumulAnnuel.irpp)}</div>
+          <div className="py-0.5 px-0.5">{formatAmount(cumulAnnuel.tol)}</div>
         </div>
       </div>
 
-      <div className="border-t border-black p-2 text-xs">
-        <div className="grid grid-cols-4 gap-4">
+      <div className="border-t border-black py-1 px-2">
+        <div className="grid grid-cols-4 gap-2">
           <div><strong>Congés</strong></div>
           <div><strong>Acquis</strong></div>
           <div><strong>Pris</strong></div>
           <div><strong>Restants</strong></div>
         </div>
-        <div className="grid grid-cols-4 gap-4 mt-1">
+        <div className="grid grid-cols-4 gap-2">
           <div>{year || new Date().getFullYear()}</div>
           <div>{conges.acquis.toFixed(2)}</div>
           <div>{conges.pris.toFixed(2)}</div>
@@ -114,18 +114,18 @@ export function BulletinFooterServer({
         </div>
       </div>
 
-      <div className="border-t border-black p-2 text-center" style={{fontSize: '10px'}}>
+      <div className="border-t border-black py-1 px-2 text-center" style={{fontSize: '8px'}}>
         Dans votre intérêt et pour vous aider à faire valoir vos droits, conserver ce bulletin de paie sans limitation de durée
       </div>
 
-      <div className="border-t border-black grid grid-cols-2 text-xs">
-        <div className="border-r border-black p-4">
-          <div className="mb-2"><strong>L&apos;employeur :</strong></div>
-          <div className="border border-gray-300 h-16"></div>
+      <div className="border-t border-black grid grid-cols-2">
+        <div className="border-r border-black py-2 px-3">
+          <div className="mb-1"><strong>L&apos;employeur :</strong></div>
+          <div className="border border-gray-300 h-12"></div>
         </div>
-        <div className="p-4">
-          <div className="mb-2"><strong>L&apos;employé :</strong></div>
-          <div className="border border-gray-300 h-16"></div>
+        <div className="py-2 px-3">
+          <div className="mb-1"><strong>L&apos;employé :</strong></div>
+          <div className="border border-gray-300 h-12"></div>
         </div>
       </div>
     </div>
