@@ -77,6 +77,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modul
 # Copier les fichiers de seed (optionnel pour init DB)
 COPY --from=builder --chown=nextjs:nodejs /app/prisma/seed-*.ts ./prisma/
 
+# Copier les routes API uploads (standalone ne les inclut pas automatiquement)
+COPY --from=builder --chown=nextjs:nodejs /app/src/app/uploads ./src/app/uploads
+
 # Variables d'environnement
 ENV NODE_ENV=production
 ENV PORT=3000
