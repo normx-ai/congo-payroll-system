@@ -38,24 +38,16 @@ export default function FinancePage() {
                 <div className="flex items-start space-x-3">
                   <DollarSign className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900">Trésorerie</h3>
-                    <p className="text-sm text-gray-600">Suivi des flux de trésorerie et paiements</p>
+                    <h3 className="font-semibold text-gray-900">Écritures de comptabilisation par mois</h3>
+                    <p className="text-sm text-gray-600">Génération automatique des écritures comptables mensuelles de la paie</p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
                   <DollarSign className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900">Budget prévisionnel</h3>
-                    <p className="text-sm text-gray-600">Planification et suivi budgétaire</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3">
-                  <DollarSign className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold text-gray-900">États financiers</h3>
-                    <p className="text-sm text-gray-600">Bilan, compte de résultat, flux de trésorerie</p>
+                    <h3 className="font-semibold text-gray-900">Financement par comptabilisation</h3>
+                    <p className="text-sm text-gray-600">Suivi et gestion du financement basé sur les écritures comptables</p>
                   </div>
                 </div>
               </div>
