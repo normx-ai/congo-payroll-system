@@ -72,6 +72,9 @@ services:
 
       # Multi-tenant
       ENABLE_MULTI_TENANT: ${ENABLE_MULTI_TENANT:-true}
+
+      # OpenAI (pour Agent IA)
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     volumes:
       # Persister les uploads et logs
       - uploads_data:/app/uploads
