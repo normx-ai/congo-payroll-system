@@ -3,6 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { NextAuthProvider } from "@/components/providers/NextAuthProvider";
 import { ExerciceProvider } from "@/contexts/ExerciceContext";
+import { ChatProvider } from "@/contexts/ChatContext";
+import { ChatPopupContainer } from "@/components/agents/ChatPopupContainer";
+import { FloatingChatButton } from "@/components/agents/FloatingChatButton";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -36,8 +39,12 @@ export default function RootLayout({
       >
         <NextAuthProvider>
           <ExerciceProvider>
-            {children}
-            <Toaster />
+            <ChatProvider>
+              {children}
+              <ChatPopupContainer />
+              <FloatingChatButton />
+              <Toaster />
+            </ChatProvider>
           </ExerciceProvider>
         </NextAuthProvider>
       </body>

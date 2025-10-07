@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils'
 import {
   Home,
   Users,
-  FileText,
   Settings,
   Calculator,
   TrendingUp,
@@ -17,7 +16,6 @@ const menuItems = [
   { href: '/dashboard', label: 'Tableau de bord', icon: Home, color: 'text-blue-400', shortLabel: 'Dashboard' },
   { href: '/employes', label: 'Employés', icon: Users, color: 'text-green-400', shortLabel: 'Employés' },
   { href: '/paie', label: 'Traitement Paie', icon: Calculator, color: 'text-purple-400', shortLabel: 'Paie' },
-  { href: '/bulletins', label: 'Bulletins de Paie', icon: FileText, color: 'text-yellow-400', shortLabel: 'Bulletins' },
   { href: '/rapports', label: 'Rapports & Analytics', icon: TrendingUp, color: 'text-pink-400', shortLabel: 'Rapports' },
   { href: '/finance', label: 'Finance', icon: DollarSign, color: 'text-emerald-400', shortLabel: 'Finance' },
   { href: '/parametres', label: 'Paramètres', icon: Settings, color: 'text-gray-400', shortLabel: 'Config' },
