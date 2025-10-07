@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (exerciceGuard) return exerciceGuard
 
     // 3. Validation des paramètres
-    const { employeeId, periode, rubriquesSaisies = [], chargesDeductibles = 0, joursTravailles = 26 } = await req.json()
+    const { employeeId, periode, rubriquesSaisies = [], chargesDeductibles = 0, joursTravailles = 26, skipPdfGeneration = false } = await req.json()
 
     console.log('📥 API /bulletins/generate - Données reçues:', {
       employeeId,
@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
       joursTravailles,
       rubriquesSaisiesCount: rubriquesSaisies.length,
       rubriquesSaisies,
-      chargesDeductibles
+      chargesDeductibles,
+      skipPdfGeneration
     })
 
     if (!employeeId || !periode) {
@@ -137,11 +138,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 7. Générer bulletin
-    const result = await BulletinGenerator.generateBulletin(bulletinData)
+    // 7. Générer et sauvegarder bulletin (avec ou sans PDF selon flag)
+    let bulletinId: string
+    let pdfPath: string | null = null
 
-    // 8. Sauvegarder
-    const { bulletinId, pdfPath } = await BulletinStorageService.saveBulletin(bulletinData, result)
+    if (skipPdfGeneration) {
+      // V1: Sauvegarde uniquement sans PDF (optimisation)
+      console.log('⏩ Mode V1: Sauvegarde sans génération PDF')
+      bulletinId = await BulletinStorageService.saveWithoutPdf(bulletinData)
+    } else {
+      // Génération complète avec PDF
+      console.log('📄 Génération complète avec PDF')
+      const result = await BulletinGenerator.generateBulletin(bulletinData)
+      const saved = await BulletinStorageService.saveBulletin(bulletinData, result)
+      bulletinId = saved.bulletinId
+      pdfPath = saved.pdfPath
+    }
 
     return NextResponse.json({
       success: true,

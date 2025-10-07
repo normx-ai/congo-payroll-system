@@ -34,8 +34,8 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
   // Filtrer les rubriques à afficher
   const allRubriquesToShow = filterRubriquesToShow(rubriques, selectedEmployeeData, amounts, parameters)
 
-  // Fonction de génération du bulletin
-  const handleValidateAndGenerateBulletin = async () => {
+  // Fonction de validation du bulletin (sans génération PDF pour v1)
+  const handleValidateBulletin = async () => {
     if (!selectedEmployeeData) return
 
     try {
@@ -69,17 +69,19 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
         totalRubriques: rubriquesSaisies.length
       })
 
+      // V1: Sauvegarde uniquement (génération PDF désactivée pour optimisation ultérieure)
       await generateAndSaveBulletin({
         employeeId: selectedEmployeeData.id,
         periode,
         joursTravailles,
         rubriquesSaisies,
-        chargesDeductibles: 0
+        chargesDeductibles: 0,
+        skipPdfGeneration: true // Flag pour skipper la génération PDF
       })
 
       onValidate()
     } catch (err) {
-      console.error('Erreur génération bulletin:', err)
+      console.error('Erreur validation bulletin:', err)
     }
   }
   console.log('ReviewStep - rubriques après filtrage:', allRubriquesToShow.map(r => ({
@@ -135,24 +137,24 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
             )}
             <div className="flex gap-4">
               <Button
-                onClick={handleValidateAndGenerateBulletin}
+                onClick={handleValidateBulletin}
                 disabled={generating || success || loadingParams}
                 className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
               >
                 {generating ? (
                   <>
                     <Loader className="w-4 h-4 mr-2 animate-spin" />
-                    Génération en cours...
+                    Validation en cours...
                   </>
                 ) : success ? (
                   <>
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Bulletin généré
+                    Bulletin validé
                   </>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Valider et Générer Bulletin
+                    Valider le Bulletin
                   </>
                 )}
               </Button>
@@ -172,21 +174,14 @@ export function ReviewStep({ selectedEmployeeData, parameters, amounts, month, y
               </div>
             )}
 
-            {success && downloadUrl && (
+            {success && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-green-700 text-sm">
-                    ✅ Bulletin généré et sauvegardé avec succès !
-                  </p>
-                  <Button
-                    onClick={() => window.open(downloadUrl, '_blank')}
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Télécharger PDF
-                  </Button>
-                </div>
+                <p className="text-green-700 text-sm">
+                  ✅ Bulletin validé et sauvegardé avec succès !
+                </p>
+                <p className="text-gray-600 text-xs mt-1">
+                  💡 La génération PDF sera optimisée dans une prochaine version
+                </p>
               </div>
             )}
           </div>

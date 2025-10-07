@@ -120,6 +120,67 @@ export class BulletinStorageService {
   }
 
   /**
+   * Sauvegarde un bulletin sans génération PDF (V1 optimisée)
+   */
+  static async saveWithoutPdf(data: BulletinData): Promise<string> {
+    const { calculation, month, year, employeeId } = data
+    const [monthNum, yearNum] = [parseInt(month), parseInt(year)]
+
+    // Préparer les données JSON complètes
+    const bulletinDataJson = {
+      calculation,
+      generatedAt: new Date().toISOString(),
+      version: '1.0',
+      rubriques: {
+        gains: calculation.rubriques.gains,
+        retenues: calculation.rubriques.retenues
+      },
+      totaux: {
+        gains: calculation.totalGains,
+        retenues: calculation.totalRetenues,
+        net: calculation.salaireNet,
+        chargesEmployeur: calculation.cotisationsEmployeur
+      },
+      employee: calculation.employeeData
+    }
+
+    // Insérer ou mettre à jour le bulletin (sans pdfPath)
+    const bulletin = await prisma.bulletinPaie.upsert({
+      where: {
+        employeeId_periode: {
+          employeeId,
+          periode: `${year}-${month.padStart(2, '0')}`
+        }
+      },
+      update: {
+        status: 'validated',
+        grossSalary: calculation.totalGains,
+        netSalary: calculation.salaireNet,
+        totalDeductions: calculation.totalRetenues,
+        totalChargesPatronales: calculation.cotisationsEmployeur,
+        dataJson: JSON.parse(JSON.stringify(bulletinDataJson)),
+        updatedAt: new Date()
+      },
+      create: {
+        employeeId,
+        tenantId: await this.getTenantIdFromEmployee(employeeId),
+        month: monthNum,
+        year: yearNum,
+        periode: `${year}-${month.padStart(2, '0')}`,
+        pdfPath: null, // Pas de PDF généré en V1
+        status: 'validated',
+        grossSalary: calculation.totalGains,
+        netSalary: calculation.salaireNet,
+        totalDeductions: calculation.totalRetenues,
+        totalChargesPatronales: calculation.cotisationsEmployeur,
+        dataJson: JSON.parse(JSON.stringify(bulletinDataJson))
+      }
+    })
+
+    return bulletin.id
+  }
+
+  /**
    * Sauvegarde complète d'un bulletin (PDF + BDD)
    */
   static async saveBulletin(

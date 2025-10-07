@@ -19,6 +19,7 @@ interface GenerateBulletinParams {
   joursTravailles?: number
   rubriquesSaisies?: RubriqueSaisie[]
   chargesDeductibles?: number
+  skipPdfGeneration?: boolean // V1: Option pour sauter la génération PDF
 }
 
 export function useBulletinGeneration() {
