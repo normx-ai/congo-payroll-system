@@ -53,9 +53,10 @@ knowledge-base
 logs
 *.log
 
-# Uploads (ne pas inclure dans l'image)
-uploads
-public/uploads
+# Uploads (données uniquement, pas les routes API)
+/uploads
+/public/uploads
+!src/app/uploads
 
 # Temporaires
 .cache
