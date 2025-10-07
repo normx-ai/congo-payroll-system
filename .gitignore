@@ -52,9 +52,10 @@ next-env.d.ts
 logs/*.log
 *.log
 
-# uploads
-uploads/
-public/uploads/
+# uploads (données uniquement, pas les routes)
+/uploads/
+/public/uploads/
+!src/app/uploads/
 
 # Docker volumes
 postgres_data/
