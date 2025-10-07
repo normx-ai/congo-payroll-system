@@ -35,7 +35,8 @@ export async function GET(
     const contentType = mimeTypes[ext || ''] || 'application/octet-stream'
 
     // Retourner le fichier avec le bon type MIME
-    return new NextResponse(fileBuffer, {
+    // Convertir Buffer en Uint8Array pour NextResponse
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
